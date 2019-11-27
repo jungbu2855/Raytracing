@@ -23,17 +23,20 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bmploader.h">
-      <Filter>소스 파일</Filter>
+    <ClInclude Include="material.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ray.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="vec.h">
-      <Filter>소스 파일</Filter>
+      <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="shape.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="material.h">
-      <Filter>소스 파일</Filter>
+    <ClInclude Include="bmploader.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -103,7 +103,7 @@ public:
 	bool operator>= (const Vec4<T> &right) const { return !((*this) < right); }
 
 	// Functions
-	// available: dot(), cross(), norm(), normalize()
+	// available: dot(), cross(), norm(), normalize(), distance()
 
 	// Dot product
 	const T dot(const Vec4<T> &right) const {
@@ -120,8 +120,15 @@ public:
 
 	// Normalize
 	Vec4<T> &normalize() {
-		T norm_inv = 1 / (this->norm());
+		T norm = this->norm();
+		T norm_inv = norm != 0 ? 1 / norm : 0;
 		return ((*this) *= norm_inv);
+	}
+
+	// Distance
+	const T distance(const Vec4<T> &right) const {
+		Vec4<T> v = right - (*this);
+		return v.norm();
 	}
 };
 
@@ -209,7 +216,7 @@ public:
 	bool operator>= (const Vec3<T> &right) const { return !((*this) < right); }
 
 	// Functions
-	// available: dot(), cross(), norm(), normalize()
+	// available: dot(), cross(), norm(), normalize(), distance()
 
 	// Dot product
 	const T dot(const Vec3<T> &right) const {
@@ -235,7 +242,14 @@ public:
 
 	// Normalize
 	Vec3<T> &normalize() {
-		T norm_inv = 1 / (this->norm());
+		T norm = this->norm();
+		T norm_inv = norm != 0 ? 1 / norm : 0;
 		return ((*this) *= norm_inv);
+	}
+
+	// Distance
+	const T distance(const Vec3<T> &right) const {
+		Vec3<T> v = right - (*this);
+		return v.norm();
 	}
 };
