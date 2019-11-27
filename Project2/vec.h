@@ -32,9 +32,15 @@ public:
 	template <typename U> Vec4(Vec4<U> v) { for (int i = 0; i < 4; i++) this->e[i] = T(v.e[i]); }
 	
 	// Getter, Setters
-	T get(int i) { return e[i]; }
+	T get(int i) {
+		assert(i >= 0 && i < 4);
+		return e[i];
+	}
 	const T *getv() { return e; }
-	void set(int i, T _e) { e[i] = _e; }
+	void set(int i, T _e) {
+		assert(i >= 0 &&i < 4);
+		e[i] = _e;
+	}
 	void setv(T _e[]) { for (int i = 0; i < 4; i++) e[i] = _e[i]; }
 
 	// Operators
@@ -49,7 +55,7 @@ public:
 	}
 	Vec4<T> &operator= (const Vec4<T> &right){							// =
 		for (int i = 0; i < 4; i++)
-			this->e[i] = right->e[i];
+			this->e[i] = right.e[i];
 		return *this;
 	}
 	const Vec4<T> operator+ () const { return Vec4<T>(*this); }			// +
@@ -88,7 +94,7 @@ public:
 	friend ostream& operator<< (ostream& os, const Vec4<T> &right) {	// <<
 		os << "[ ";
 		for (int i = 0; i < 4; i++)
-			os << right.e[i] << " ";
+			os << (right.e[i] < 0 ? "" : " ") << right.e[i] << " ";
 		os << "]";
 		return os;
 	}
@@ -145,9 +151,15 @@ public:
 	template <typename U> Vec3(Vec3<U> v) { for (int i = 0; i < 3; i++) this->e[i] = T(v.e[i]); }
 	
 	// Getter, Setters
-	T get(int i) { return e[i]; }
+	T get(int i) {
+		assert(i >= 0 && i < 3);
+		return e[i];
+	}
 	const T *getv() { return e; }
-	void set(int i, T _e) { e[i] = _e; }
+	void set(int i, T _e) {
+		assert(i >= 0 && i < 3);
+		e[i] = _e;
+	}
 	void setv(T _e[]) { for (int i = 0; i < 3; i++) e[i] = _e[i]; }
 
 	// Operators
@@ -162,7 +174,7 @@ public:
 	}
 	Vec3<T> &operator= (const Vec3<T> &right){							// =
 		for (int i = 0; i < 3; i++)
-			this->e[i] = right->e[i];
+			this->e[i] = right.e[i];
 		return *this;
 	}
 	const Vec3<T> operator+ () const { return Vec3<T>(*this); }			// +
@@ -201,7 +213,7 @@ public:
 	friend ostream& operator<< (ostream& os, const Vec3<T> &right) {		// <<
 		os << "[ ";
 		for (int i = 0; i < 3; i++)
-			os << right.e[i] << " ";
+			os << (right.e[i] < 0 ? "" : " ") << right.e[i] << " ";
 		os << "]";
 		return os;
 	}
@@ -253,3 +265,383 @@ public:
 		return v.norm();
 	}
 };
+
+template <typename T>
+class Mat4 {
+private:
+	T m[4][4];
+public:
+	// Constructors
+	Mat4() {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				m[i][j] = 0;
+		}
+	}
+	Mat4(T _m[4][4]) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				m[i][j] = _m[i][j];
+		}
+	}
+
+	// Getter, Setters
+	const T *getMat() const { return m; }
+	T get_ij(int i, int j) const {
+		assert(i >= 0 && i < 4 && j >= 0 && j < 4);
+		return m[i][j];
+	}
+	void setMat(T _m[4][4]) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				m[i][j] = _m[i][j];
+		}
+	}
+	void setMat_ij(T e, int i, int j) {
+		assert(i >= 0 && i < 4 && j >= 0 && j < 4);
+		m[i][j] = e;
+	}
+
+	// Operators
+	Mat4<T> &operator= (const Mat4<T> &right) {							// =
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				this->m[i][j] = right.m[i][j];
+		}
+		return *this;
+	}
+	const Mat4<T> operator+ () const { return Mat4<T>(*this); }			// +
+	const Mat4<T> operator+ (const Mat4<T> &right) const {
+		Mat4<T> ret = *this;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				ret.m[i][j] += right.m[i][j];
+		}
+		return ret;
+	}
+	const Mat4<T> operator- () const {									// -
+		Mat4<T> ret;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				ret.m[i][j] = -(this->m[i][j]);
+		}
+		return ret;
+	}
+	const Mat4<T> operator- (const Mat4<T> &right) const {
+		Mat4<T> ret = *this;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				ret.m[i][j] -= right.m[i][j];
+		}
+		return ret;
+	}
+	const Mat4<T> operator* (T c) const {								// scalar *
+		Mat4<T> ret = *this;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				ret.m[i][j] *= c;
+		}
+		return ret;
+	}
+	friend const Mat4<T> operator* (T c, const Mat4<T> &right) {
+		Mat4<T> ret = right;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				ret.m[i][j] *= c;
+		}
+		return ret;
+	}
+	const Mat4<T> operator* (const Mat4<T> &right) const {				// matmul
+		Mat4<T> ret;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				for (int k = 0; k < 4; k++)
+					ret.m[i][j] += this->m[i][k] * right.m[k][j];
+			}
+		}
+		return ret;
+	}
+	const Vec4<T> operator* (const Vec4<T> &v) const {					// mat * vec
+		Vec4<T> ret;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				ret[i] += m[i][j] * v[j];
+		}
+		return ret;
+	}
+	friend const Vec4<T> operator* (const Vec4<T> &v, const Mat4<T> &right) {
+		Vec4<T> ret;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				ret[i] += right.m[i][j] * v[j];
+		}
+		return ret;
+	}
+	Mat4<T> &operator+= (const Mat4<T> &right) {						// +=
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				this->m[i][j] += right.m[i][j];
+		}
+		return *this;
+	}
+	Mat4<T> &operator-= (const Mat4<T> &right) {						// -=
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				this->m[i][j] -= right.m[i][j];
+		}
+		return *this;
+	}
+	Mat4<T> &operator*= (T c) {											// *= (scalar)
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				this->m[i][j] *= c;
+		}
+		return *this;
+	}
+	Mat4<T> &operator*= (const Mat4<T> right) {							// *= (matmul)
+		*this = (*this) * right;
+		return *this;
+	}
+	friend ostream& operator<< (ostream& os, const Mat4<T> &right) {	// <<
+		os << "[";
+		for (int i = 0; i < 4; i++) {
+			os << (i == 0 ? "[ " : " [ ");
+			for (int j = 0; j < 4; j++)
+				os << (right.m[i][j] < 0 ? "" : " ") << right.m[i][j] << " ";
+			os << (i != 3 ? "]\n" : "]");
+		}
+		os << "]";
+		return os;
+	}
+	bool operator== (const Mat4<T> &right) const {						// relational
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				if (this->m[i][j] != right.m[i][j])
+					return false;
+			}
+		}
+		return true;
+	}
+	bool operator!= (const Mat4<T> &right) const { return !((*this) == right); }
+
+	// Functions
+	const Mat4<T> &loadIdentity() {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++)
+				this->m[i][j] = (i == j ? 1 : 0);
+		}
+		return *this;
+	}
+};
+
+template <typename T>
+class Mat3 {
+private:
+	T m[3][3];
+public:
+	// Constructors
+	Mat3() {
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				m[i][j] = 0;
+		}
+	}
+	Mat3(T _m[3][3]) {
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				m[i][j] = _m[i][j];
+		}
+	}
+
+	// Getter, Setters
+	const T *getMat() const { return m; }
+	T get_ij(int i, int j) const {
+		assert(i >= 0 && i < 3 && j >= 0 && j < 3);
+		return m[i][j];
+	}
+	void setMat(T _m[3][3]) {
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				m[i][j] = _m[i][j];
+		}
+	}
+	void setMat_ij(T e, int i, int j) {
+		assert(i >= 0 && i < 3 && j >= 0 && j < 3);
+		m[i][j] = e;
+	}
+
+	// Operators
+	Mat3<T> &operator= (const Mat3<T> &right) {							// =
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				this->m[i][j] = right.m[i][j];
+		}
+		return *this;
+	}
+	const Mat3<T> operator+ () const { return Mat3<T>(*this); }			// +
+	const Mat3<T> operator+ (const Mat3<T> &right) const {
+		Mat3<T> ret = *this;
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				ret.m[i][j] += right.m[i][j];
+		}
+		return ret;
+	}
+	const Mat3<T> operator- () const {									// -
+		Mat3<T> ret;
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				ret.m[i][j] = -(this->m[i][j]);
+		}
+		return ret;
+	}
+	const Mat3<T> operator- (const Mat3<T> &right) const {
+		Mat3<T> ret = *this;
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				ret.m[i][j] -= right.m[i][j];
+		}
+		return ret;
+	}
+	const Mat3<T> operator* (T c) const {								// scalar *
+		Mat3<T> ret = *this;
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				ret.m[i][j] *= c;
+		}
+		return ret;
+	}
+	friend const Mat3<T> operator* (T c, const Mat3<T> &right) {
+		Mat3<T> ret = right;
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				ret.m[i][j] *= c;
+		}
+		return ret;
+	}
+	const Mat3<T> operator* (const Mat3<T> &right) const {				// matmul
+		Mat3<T> ret;
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				for (int k = 0; k < 3; k++)
+					ret.m[i][j] += this->m[i][k] * right.m[k][j];
+			}
+		}
+		return ret;
+	}
+	const Vec3<T> operator* (const Vec3<T> &v) const {					// mat * vec
+		Vec3<T> ret;
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				ret[i] += m[i][j] * v[j];
+		}
+		return ret;
+	}
+	friend const Vec3<T> operator* (const Vec3<T> &v, const Mat3<T> &right) {
+		Vec3<T> ret;
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				ret[i] += right.m[i][j] * v[j];
+		}
+		return ret;
+	}
+	Mat3<T> &operator+= (const Mat3<T> &right) {						// +=
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				this->m[i][j] += right.m[i][j];
+		}
+		return *this;
+	}
+	Mat3<T> &operator-= (const Mat3<T> &right) {						// -=
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				this->m[i][j] -= right.m[i][j];
+		}
+		return *this;
+	}
+	Mat3<T> &operator*= (T c) {											// *= (scalar)
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				this->m[i][j] *= c;
+		}
+		return *this;
+	}
+	Mat3<T> &operator*= (const Mat3<T> right) {							// *= (matmul)
+		*this = (*this) * right;
+		return *this;
+	}
+	friend ostream& operator<< (ostream& os, const Mat3<T> &right) {	// <<
+		os << "[";
+		for (int i = 0; i < 3; i++) {
+			os << (i == 0 ? "[ " : " [ ");
+			for (int j = 0; j < 3; j++)
+				os << (right.m[i][j] < 0 ? "" : " ") << right.m[i][j] << " ";
+			os << (i != 2 ? "]\n" : "]");
+		}
+		os << "]";
+		return os;
+	}
+	bool operator== (const Mat3<T> &right) const {						// relational
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				if (this->m[i][j] != right.m[i][j])
+					return false;
+			}
+		}
+		return true;
+	}
+	bool operator!= (const Mat3<T> &right) const { return !((*this) == right); }
+
+	// Functions
+	const Mat3<T> &loadIdentity() {
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				this->m[i][j] = (i == j ? 1 : 0);
+		}
+		return *this;
+	}
+};
+
+
+// Transformation functions
+
+template <typename T>
+const Mat4<float> rotate(float rad, const Vec3<T> &axis) {
+	float _cos = cos(rad);
+	float _sin = sin(rad);
+	Vec3<T> _axis = axis;
+	_axis.normalize();
+
+	float temp[4][4] = {
+		{_cos + _axis[X] * _axis[X] * (1 - _cos), _axis[X] * _axis[Y] * (1 - _cos) - _axis[Z] * _sin, _axis[X] * _axis[Z] * (1 - _cos) + _axis[Y] * _sin, 0},
+		{_axis[Y] * _axis[X] * (1 - _cos) + _axis[Z] * _sin, _cos + _axis[Y] * _axis[Y] * (1 - _cos), _axis[Y] * _axis[Z] * (1 - _cos) + _axis[X] * _sin, 0},
+		{_axis[Z] * _axis[X] * (1 - _cos) - _axis[Y] * _sin, _axis[Z] * _axis[Y] * (1 - _cos) + _axis[X] * _sin, _cos + _axis[Z] * _axis[Z] * (1 - _cos), 0},
+		{0, 0, 0, 1}
+	};
+	return Mat4<float>(temp);
+}
+
+template <typename T>
+const Mat4<T> translate(const Vec3<T> &displacement) {
+	Mat4<T> ret;
+	ret.loadIdentity();
+	for (int i = 0; i < 3; i++) {
+		ret.setMat_ij(displacement[i], i, 3);
+	}
+	return ret;
+}
+
+template <typename T>
+const Mat4<T> scale(T scaleX, T scaleY, T scaleZ) {
+	Mat4<T> ret;
+	ret.setMat_ij(scaleX, 0, 0);
+	ret.setMat_ij(scaleY, 1, 1);
+	ret.setMat_ij(scaleZ, 2, 2);
+	ret.setMat_ij(1, 3, 3);
+	return ret;
+}
+
+template <typename T>
+const Mat4<T> scale(T factor) {
+	return scale(factor, factor, factor);
+}
