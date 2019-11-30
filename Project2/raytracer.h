@@ -4,21 +4,13 @@
 #include "material.h"
 #include "mesh.h"
 #include "ray.h"
-
-class Octree;
-class Mesh;
-class Material;
-struct Light;
-struct Face;
-struct Camera;
-
-typedef Vec3<float> Vec3f;
+#include "octree.h"
+#include "definitions.h"
 
 class RayTracer {
 private:
 	Octree   *octree;
 	Mesh     *meshes;
-	Material *materials;
 	Light    *lights;
 	Camera   *camera;
 

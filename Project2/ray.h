@@ -1,13 +1,10 @@
 #pragma once
 #include "vec.h"
+#include "definitions.h"
 
 #ifndef MAX_RAY_DEPTH
 	#define MAX_RAY_DEPTH 5
 #endif
-
-typedef Vec3<float> Vec3f;
-struct Face;
-struct Light;
 
 class Ray {
 private:

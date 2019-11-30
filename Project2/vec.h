@@ -5,20 +5,6 @@
 #include <cmath>
 using namespace std;
 
-enum Axis {
-	X = 0,
-	Y = 1,
-	Z = 2,
-	W = 3
-};
-
-enum Color {
-	R = 0,
-	G = 1,
-	B = 2,
-	A = 3
-};
-
 template <typename T>
 class Vec4 {
 private:
@@ -241,9 +227,9 @@ public:
 	// Cross product
 	const Vec3<T> cross(const Vec3<T> &right) const {
 		Vec3<T> ret;
-		ret[X] = e[Y] * right[Z] - e[Z] * right[Y];
-		ret[Y] = e[Z] * right[X] - e[X] * right[Z];
-		ret[Z] = e[X] * right[Y] - e[Y] * right[X];
+		ret[0] = e[1] * right[2] - e[2] * right[1];
+		ret[1] = e[2] * right[0] - e[0] * right[2];
+		ret[2] = e[0] * right[1] - e[1] * right[0];
 		return ret;
 	}
 
@@ -613,9 +599,9 @@ const Mat4<float> rotate(float rad, const Vec3<T> &axis) {
 	_axis.normalize();
 
 	float temp[4][4] = {
-		{_cos + _axis[X] * _axis[X] * (1 - _cos), _axis[X] * _axis[Y] * (1 - _cos) - _axis[Z] * _sin, _axis[X] * _axis[Z] * (1 - _cos) + _axis[Y] * _sin, 0},
-		{_axis[Y] * _axis[X] * (1 - _cos) + _axis[Z] * _sin, _cos + _axis[Y] * _axis[Y] * (1 - _cos), _axis[Y] * _axis[Z] * (1 - _cos) + _axis[X] * _sin, 0},
-		{_axis[Z] * _axis[X] * (1 - _cos) - _axis[Y] * _sin, _axis[Z] * _axis[Y] * (1 - _cos) + _axis[X] * _sin, _cos + _axis[Z] * _axis[Z] * (1 - _cos), 0},
+		{_cos + _axis[0] * _axis[0] * (1 - _cos), _axis[0] * _axis[1] * (1 - _cos) - _axis[2] * _sin, _axis[0] * _axis[2] * (1 - _cos) + _axis[1] * _sin, 0},
+		{_axis[1] * _axis[0] * (1 - _cos) + _axis[2] * _sin, _cos + _axis[1] * _axis[1] * (1 - _cos), _axis[1] * _axis[2] * (1 - _cos) + _axis[0] * _sin, 0},
+		{_axis[2] * _axis[0] * (1 - _cos) - _axis[1] * _sin, _axis[2] * _axis[1] * (1 - _cos) + _axis[0] * _sin, _cos + _axis[2] * _axis[2] * (1 - _cos), 0},
 		{0, 0, 0, 1}
 	};
 	return Mat4<float>(temp);

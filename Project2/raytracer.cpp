@@ -1,4 +1,5 @@
 #include "raytracer.h"
+#include "definitions.h"
 
 const Face * RayTracer::intersect(Ray ray) const {
 	return nullptr;
@@ -20,6 +21,7 @@ const Vec3f * RayTracer::render() const {
 	// 		Ray primary_ray = find_primary_ray(i, j, camera);
 	// 	}
 	// }
+	return nullptr;
 }
 
 const Ray find_primary_ray(int h, int w, Camera camera) {
