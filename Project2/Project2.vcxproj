@@ -121,6 +121,7 @@
   <ItemGroup>
     <ClCompile Include="bmploader.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="raytracer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bmploader.h" />
@@ -128,6 +129,7 @@
     <ClInclude Include="mesh.h" />
     <ClInclude Include="vec.h" />
     <ClInclude Include="ray.h" />
+    <ClInclude Include="raytracer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
