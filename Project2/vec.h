@@ -414,7 +414,7 @@ public:
 	const Mat4<T> &loadIdentity() {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++)
-				this->m[i][j] = (i == j ? 1 : 0);
+				this->m[i][j] = (i == j ? T(1) : T(0));
 		}
 		return *this;
 	}

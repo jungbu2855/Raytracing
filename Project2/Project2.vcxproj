@@ -121,6 +121,7 @@
   <ItemGroup>
     <ClCompile Include="bmploader.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mesh.cpp" />
     <ClCompile Include="octree.cpp" />
     <ClCompile Include="raytracer.cpp" />
   </ItemGroup>
