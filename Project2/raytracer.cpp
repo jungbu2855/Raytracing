@@ -52,7 +52,7 @@ const bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) 
 }
 
 const Vec3f RayTracer::cast(Ray ray) const {
-	return Vec3f();
+	
 }
 
 Vec3f ** RayTracer::render() const {
@@ -161,4 +161,19 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 	ret_vec = v0 + s * u + t * v;
 	cout << "intersect!! p0:" << p0 << " r:" << r << endl;
 	return true;
+}
+
+static Ray shadow(const Ray& incident, const Face& face, const Vec3f ret_vec) {
+	Vec3f new_direction;
+	float temp;
+	temp = face.normal.dot(incident.getDirection());
+	new_direction = incident.getDirection() - 2 * temp * face.normal;
+
+	Ray new_ray(ret_vec, new_direction);
+
+	Vec3f new_color(0, 0, 0);
+
+	new_ray.setColor(new_color);
+
+	return new_ray;
 }

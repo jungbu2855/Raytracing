@@ -53,7 +53,4 @@ public:
 
 	// Generating a refracted ray
 	Ray refract(const Ray& incident, const Face& face, const Vec3f ret_vec) const;
-
-	// Generating a shadow ray
-	Ray shadow(const Ray& incident, const Face& face, const Vec3f ret_vec) const;
 };

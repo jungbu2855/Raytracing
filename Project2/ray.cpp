@@ -92,18 +92,3 @@ Ray Ray::refract(const Ray& incident, const Face& face, const Vec3f ret_vec) con
 	else
 		return incident;
 }
-
-Ray Ray::shadow(const Ray& incident, const Face& face, const Vec3f ret_vec)  const {
-	Vec3f new_direction;
-	float temp;
-	temp = face.normal.dot(incident.getDirection());
-	new_direction = incident.getDirection() - 2 * temp * face.normal;
-
-	Ray new_ray(ret_vec, new_direction);
-
-	Vec3f new_color(0, 0, 0);
-
-	new_ray.setColor(new_color);
-
-	return new_ray;
-}
