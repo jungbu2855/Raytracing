@@ -20,7 +20,7 @@ public:
 	Vec4(T val) { for (int i = 0; i < 4; i++) e[i] = val; }
 	Vec4(T _x, T _y, T _z, T _w) { e[0] = _x; e[1] = _y; e[2] = _z; e[3] = _w; }
 	Vec4(T v[4]) { for (int i = 0; i < 4; i++) e[i] = v[i]; }
-	Vec4(Vec3<T> v3) { for (int i = 0; i < 3; i++) e[i] = v3[i]; e[3] = 0; }
+	Vec4(Vec3<T> v3) { for (int i = 0; i < 3; i++) e[i] = v3[i]; e[3] = 1; }
 	template <typename U> Vec4(Vec4<U> v) { for (int i = 0; i < 4; i++) this->e[i] = T(v.e[i]); }
 	
 	// Getter, Setters
@@ -140,7 +140,7 @@ public:
 	Vec3(T val) { for (int i = 0; i < 3; i++) e[i] = val; }
 	Vec3(T _x, T _y, T _z) { e[0] = _x; e[1] = _y; e[2] = _z; }
 	Vec3(T v[3]) { for (int i = 0; i < 3; i++) e[i] = v[i]; }
-	Vec3(Vec4<T> v4) { for (int i = 0; i < 3; i++) e[i] = v4[i]; }
+	Vec3(Vec4<T> v4) { for (int i = 0; i < 3; i++) e[i] = (v4[3] != 0 ? v4[i] / v4[3] : v4[i]); }
 	template <typename U> Vec3(Vec3<U> v) { for (int i = 0; i < 3; i++) this->e[i] = T(v.e[i]); }
 	
 	// Getter, Setters

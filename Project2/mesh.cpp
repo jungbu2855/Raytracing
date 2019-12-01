@@ -12,7 +12,7 @@ static float INF = 1000;
 static void update_maxmin(const Vec3f &v, Vec3f &max, Vec3f &min);
 static void get_normal(Face &f);
 
-Mesh::Mesh(const char *filename, const Material &mat, int dim) : mesh_dim(dim), material(mat)
+Mesh::Mesh(const char *filename, const Material &mat, const Mat4f &_model, int dim) : mesh_dim(dim), material(mat)
 {
 	FILE *f;
 	char buf[64];
@@ -60,11 +60,10 @@ Mesh::Mesh(const char *filename, const Material &mat, int dim) : mesh_dim(dim), 
 	else
 		mulfact = dim / (v_max[Z] - v_min[Z]);
 
+	Mat4f model = _model * scale(mulfact) * translate(-center);
 	for (int i = 0; i < nv; ++i)
 	{
-		vertices[i][X] = (vertices[i][X] - center[X]) * mulfact;
-		vertices[i][Y] = (vertices[i][Y] - center[Y]) * mulfact;
-		vertices[i][Z] = (vertices[i][Z] - center[Z]) * mulfact;
+		vertices[i] = model * vertices[i];
 	}
 
 	cout << "Vertex read" << endl;
