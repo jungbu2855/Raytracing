@@ -20,10 +20,10 @@ int execute() {
 
 	// Configure
 	Light light(0, 10, 0, 1, 1, 1, 1);
-	Camera camera(0, 0, 2, 0, 0, 0, 0, 1, 0);
+	Camera camera(0, 0, 2, 0, 0, 0, 0, 1, 0, 900, 60, 1., 0.5, 10);
 
 	// Run
-	RayTracer rayTracer(&mesh, &light, &camera);
+	RayTracer rayTracer(&mesh, &light, camera);
 	Face f;
 	Vec3f v;
 	Ray ray;

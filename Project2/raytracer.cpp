@@ -2,19 +2,20 @@
 #include "definitions.h"
 
 #include <vector>
+#include <cmath>
 
+static const Ray find_primary_ray(int h, int w, const Camera &camera);
 static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec);
 
-static struct FaceVec3 {
+struct FaceVec3 {
 	Face  f;
 	Vec3f v;
 };
 
-RayTracer::RayTracer(Mesh *_meshes, Light *_lights, Camera *_camera)
+RayTracer::RayTracer(Mesh *_meshes, Light *_lights, const Camera &_camera)
 	: meshes(_meshes), lights(_lights), camera(_camera) {}
 
 const bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const {
-	
 	// Search whole space, find candidates
 	vector<FaceVec3> candidates;
 	for (int i = 0; i < meshes->get_size(); i++) {
@@ -54,23 +55,65 @@ const Vec3f RayTracer::cast(Ray ray) const {
 	return Vec3f();
 }
 
-const Vec3f * RayTracer::render() const {
-	// int height = camera.height;
-	// int width = camera.height * camera.aspect_ratio;
-	// Vec3f **pixels = new Vec3f*[height];
-	// for (int i = 0; i < height; i++)
-	// 	pixels[i] = new Vec3f[width];
-	// 
-	// for (int i = 0; i < height; i++) {
-	// 	for (int j = 0; j < width; j++) {
-	// 		Ray primary_ray = find_primary_ray(i, j, camera);
-	// 	}
-	// }
-	return nullptr;
+Vec3f ** RayTracer::render() const {
+	// init local vars
+	int height = camera.height;
+	int width = camera.height * camera.aspect_ratio;
+	Vec3f **pixels = new Vec3f*[height];	// RGB pixel container
+	for (int i = 0; i < height; i++)
+		pixels[i] = new Vec3f[width];
+	
+	// Main behavior
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			// find primary ray for each pixel
+			Ray primary_ray = find_primary_ray(i, j, camera);
+			// cast the primary ray to space, collecting pixel colors
+			pixels[i][j] = cast(primary_ray);
+		}
+	}
+	
+	// Now you have colored whole pixels
+	return pixels;
 }
 
-const Ray find_primary_ray(int h, int w, Camera camera) {
-	return Ray();
+static const Ray find_primary_ray(int h, int w, const Camera &camera) {
+	// init vars
+	Vec3f origin = camera.position;
+	Vec3f view_dir = camera.center - camera.position;
+	float h_max = camera.zNear * tan(camera.fovy / 2);
+	float w_max = h_max * camera.aspect_ratio;
+
+	// Initialize primary ray to eye(0,0,0), center(0,0,-1), up(0,1,0)
+	// Perspective view
+	float y = (2 * (float)h / camera.height - 1) * h_max;
+	float x = (2 * (float)w / (camera.height * camera.aspect_ratio) - 1) * w_max;
+	Vec3f ray_dir = { x,y,-1 };
+
+	// View transformation
+	Mat4f view; view.loadIdentity();
+
+	// (1) rotate (dir)
+	Vec3f axis = view_dir.cross({0,0,-1});
+	float sin = axis.norm() / view_dir.norm();
+	float cos = view_dir.dot({ 0,0,-1 }) / view_dir.norm();
+	float angle = cos >= 0 ? asin(sin) : acos(cos);
+	view *= rotate(angle, axis);
+
+	// (2) rotate (up)
+	Mat3f view3 = view;
+	Vec3f orig_up = { 0,1,0 };
+	orig_up = view3 * orig_up;
+	Vec3f new_up = camera.up - (view_dir.dot(camera.up) / view_dir.dot(view_dir)) * view_dir;
+
+	axis = new_up.cross(orig_up);
+	sin = axis.norm() / new_up.norm();
+	cos = new_up.dot(orig_up) / new_up.norm();
+	angle = cos >= 0 ? asin(sin) : acos(cos);
+	view = rotate(angle, axis) * Mat4f(view3);
+
+	ray_dir = Mat3f(view) * ray_dir;
+	return Ray(origin, ray_dir);
 }
 
 static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {

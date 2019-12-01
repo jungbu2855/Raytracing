@@ -5,6 +5,11 @@
 #include <cmath>
 using namespace std;
 
+template <typename T> class Vec4;
+template <typename T> class Vec3;
+template <typename T> class Mat4;
+template <typename T> class Mat3;
+
 template <typename T>
 class Vec4 {
 private:
@@ -15,6 +20,7 @@ public:
 	Vec4(T val) { for (int i = 0; i < 4; i++) e[i] = val; }
 	Vec4(T _x, T _y, T _z, T _w) { e[0] = _x; e[1] = _y; e[2] = _z; e[3] = _w; }
 	Vec4(T v[4]) { for (int i = 0; i < 4; i++) e[i] = v[i]; }
+	Vec4(Vec3<T> v3) { for (int i = 0; i < 3; i++) e[i] = v3[i]; e[3] = 0; }
 	template <typename U> Vec4(Vec4<U> v) { for (int i = 0; i < 4; i++) this->e[i] = T(v.e[i]); }
 	
 	// Getter, Setters
@@ -134,6 +140,7 @@ public:
 	Vec3(T val) { for (int i = 0; i < 3; i++) e[i] = val; }
 	Vec3(T _x, T _y, T _z) { e[0] = _x; e[1] = _y; e[2] = _z; }
 	Vec3(T v[3]) { for (int i = 0; i < 3; i++) e[i] = v[i]; }
+	Vec3(Vec4<T> v4) { for (int i = 0; i < 3; i++) e[i] = v4[i]; }
 	template <typename U> Vec3(Vec3<U> v) { for (int i = 0; i < 3; i++) this->e[i] = T(v.e[i]); }
 	
 	// Getter, Setters
@@ -178,6 +185,9 @@ public:
 	const Vec3<T> operator* (T c) const {								// scalar *
 		return Vec3<T>(c*e[0], c*e[1], c*e[2]);
 	}
+	const Vec3<T> operator/ (T c) const {								// scalar /
+		return Vec3<T>(e[0] / c, e[1] / c, e[2] / c);
+	}
 	friend const Vec3<T> operator* (T c, const Vec3<T> &right) {
 		return Vec3<T>(c*right.e[0], c*right.e[1], c*right.e[2]);
 	}
@@ -194,6 +204,11 @@ public:
 	Vec3<T> &operator*= (T c) {											// *= (scalar)
 		for (int i = 0; i < 3; i++)
 			this->e[i] *= c;
+		return *this;
+	}
+	Vec3<T> &operator/= (T c) {											// /= (scalar)
+		for (int i = 0; i < 3; i++)
+			this->e[i] /= c;
 		return *this;
 	}
 	friend ostream& operator<< (ostream& os, const Vec3<T> &right) {		// <<
@@ -269,6 +284,14 @@ public:
 			for (int j = 0; j < 4; j++)
 				m[i][j] = _m[i][j];
 		}
+	}
+	Mat4(Mat3<T> m3) {
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				m[i][j] = m3.get_ij(i,j);
+			m[i][3] = 0;
+		}
+		m[3][3] = 1;
 	}
 
 	// Getter, Setters
@@ -436,6 +459,12 @@ public:
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++)
 				m[i][j] = _m[i][j];
+		}
+	}
+	Mat3(Mat4<T> _m) {
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++)
+				m[i][j] = _m.get_ij(i,j);
 		}
 	}
 

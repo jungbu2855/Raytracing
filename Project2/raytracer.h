@@ -7,18 +7,26 @@
 #include "octree.h"
 #include "definitions.h"
 
+/* RayTracer enables rendering based on more realistic optically modelled technique
+ * It uses back-propagating rays from eye(camera) to the lights. */
 class RayTracer {
 private:
 	//Octree   *octree;
 	Mesh     *meshes;
 	Light    *lights;
-	Camera   *camera;
+	Camera    camera;
 
 public:
-	RayTracer(Mesh *_meshes, Light *_lights, Camera *_camera);
-	const bool intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const;
-	const Vec3f cast(Ray ray) const;
-	const Vec3f *render() const;
-};
+	RayTracer(Mesh *_meshes, Light *_lights, const Camera &_camera); // initializer
 
-const Ray find_primary_ray(int h, int w, Camera camera);
+	/* intersection() gives whether the ray intersects with faces in the space.
+	   params: ray      - the ray casted
+	           ret_face - the face that would be returned as intersection face
+			   ret_vec  - the point that would be returned as intersection point
+	   return value: true if there is any face intersecting                      */
+	const bool intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const;
+
+	/*  */
+	const Vec3f cast(Ray ray) const;
+	Vec3f **render() const;
+};
