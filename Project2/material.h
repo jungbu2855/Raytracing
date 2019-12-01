@@ -32,6 +32,7 @@ public:
 		this->color = _material.color;
 		this->refraction_index = _material.refraction_index;
 		this->opaque = _material.opaque;
+		return *this;
 	}
 
 	//getter and setter function
@@ -42,6 +43,4 @@ public:
 	void setcolor(Vec3f _color) { this->color = _color; }
 	void setrefraction_index(float _refraction_index) { this->refraction_index = _refraction_index; }
 	void setopaque(bool _opaque) { this->opaque = _opaque; }
-
-	//혹시 얘만 가져야 하는 메소드가 있나요? 전 ray에서 쓰이는 특성들만 가지면 된다 생각하고 있어서 넣지는 않았지만, 생각해두신게 있다면 말씀해 주세요.
 };
