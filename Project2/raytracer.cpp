@@ -6,6 +6,8 @@
 
 static const Ray find_primary_ray(int h, int w, const Camera &camera);
 static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec);
+static Vec3f shadow(const Face& face, const Vec3f intersection_pos);
+static Vec3f setFinalColor(const Vec3f *c, int num);
 
 struct FaceVec3 {
 	Face  f;
@@ -51,8 +53,28 @@ const bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) 
 	return true;
 }
 
-const Vec3f RayTracer::cast(Ray ray) const {
-	
+const Vec3f RayTracer::cast(const Ray &ray, const Face &prev_face, const Vec3f &prev_intersection) const {
+	// Get nearest intersection
+	Face face;
+	Vec3f pos;
+	if (!intersect(ray, face, pos)) {
+		// Return diffuse color only if it does not have intersections with others
+		if (ray.getCollisions() != 0) {
+			// Shadow ray must be from the non-primary rays
+			return shadow(prev_face, prev_intersection);
+		}
+		else
+			return { 0,0,0 }; // black for non-intersecting primary rays
+	}
+
+	// Generating second rays
+	Vec3f colors[] =
+	{
+		cast(ray.reflect(face, pos), face, pos),	// reflecting ray
+		cast(ray.refract(face, pos), face, pos),	// refracting ray
+		shadow(face, pos)							// shadow ray
+	};
+	return setFinalColor(colors, 3);
 }
 
 Vec3f ** RayTracer::render() const {
@@ -69,7 +91,7 @@ Vec3f ** RayTracer::render() const {
 			// find primary ray for each pixel
 			Ray primary_ray = find_primary_ray(i, j, camera);
 			// cast the primary ray to space, collecting pixel colors
-			pixels[i][j] = cast(primary_ray);
+			pixels[i][j] = cast(primary_ray, Face(), Vec3f());
 		}
 	}
 	
@@ -120,10 +142,9 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 	Vec3f n = face.normal;
 
 	// parallel test
-	// It does not consider when the ray is INSIDE in the face plane
+	// It does not consider when the ray is INSIDE the face plane
 	float r = n.dot(ray.getDirection());
 	if (r == 0) {
-		//cout << "parallel test failed" << endl;
 		return false;
 	}
 
@@ -133,7 +154,6 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 
 	// direction test
 	if (r < 0) {
-		//cout << "direction test failed" << endl;
 		return false;
 	}
 
@@ -153,27 +173,33 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 
 	// s, t range test
 	if (s < 0 || t < 0 || s + t > 1) {
-		//cout << "s, t range test failed" << endl;
 		return false;
 	}
 
 	// Now we know that the ray intersects with the face
 	ret_vec = v0 + s * u + t * v;
-	cout << "intersect!! p0:" << p0 << " r:" << r << endl;
 	return true;
 }
 
-static Ray shadow(const Ray& incident, const Face& face, const Vec3f ret_vec) {
+static Vec3f shadow(const Face& face, const Vec3f intersection_pos) {
 	Vec3f new_direction;
 	float temp;
-	temp = face.normal.dot(incident.getDirection());
-	new_direction = incident.getDirection() - 2 * temp * face.normal;
 
-	Ray new_ray(ret_vec, new_direction);
+	// light[] 각각에 대하여 그 광원을 향하는 빛을 만들어주세요.
+	// 만들어진 shadow ray 마다 intersection test를 수행합니다.
+	// ** intersection이 있더라도 광원보다 물체가 뒤에 있으면 통과시켜야 합니다.
+	// intersection을 통과한 ray마다 해당하는 광원의 색과 material 색을 섞습니다.
+	// 각각 만들어진 색은 setFinalColor()로 합쳐진 뒤 리턴됩니다.
 
+	Ray new_ray(intersection_pos, new_direction);
 	Vec3f new_color(0, 0, 0);
 
-	new_ray.setColor(new_color);
+	return { 0,0,0 };
+}
 
-	return new_ray;
+/* param:
+ *   (Vec3f *)c : collection of colors
+ *   (int)num : number of colors       */
+static Vec3f setFinalColor(const Vec3f *c, int num) {
+	return { 0,0,0 };
 }

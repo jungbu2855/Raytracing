@@ -27,6 +27,6 @@ public:
 	const bool intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const;
 
 	/*  */
-	const Vec3f cast(Ray ray) const;
+	const Vec3f cast(const Ray &ray, const Face &prev_face, const Vec3f &prev_intersection) const;
 	Vec3f **render() const;
 };

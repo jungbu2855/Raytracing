@@ -29,5 +29,6 @@ int execute() {
 	Ray ray;
 	if (rayTracer.intersect(Ray({ 0,0,2 }, { 0,0,-1 }), f, v))
 		cout << v << endl;
+	rayTracer.render();
 	return 0;
 }
