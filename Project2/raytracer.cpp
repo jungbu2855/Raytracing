@@ -53,7 +53,7 @@ const bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) 
 	return true;
 }
 
-const Vec3f RayTracer::cast(const Ray &ray, const Face &prev_face, const Vec3f &prev_intersection) const {
+const Vec3f RayTracer::cast(const Ray &ray, const Face &prev_face) const {
 	// Get nearest intersection
 	Face face;
 	Vec3f pos;
@@ -61,7 +61,7 @@ const Vec3f RayTracer::cast(const Ray &ray, const Face &prev_face, const Vec3f &
 		// Return diffuse color only if it does not have intersections with others
 		if (ray.getCollisions() != 0) {
 			// Shadow ray must be from the non-primary rays
-			return shadow(prev_face, prev_intersection);
+			return shadow(prev_face, ray.getOrigin());
 		}
 		else
 			return { 0,0,0 }; // black for non-intersecting primary rays
@@ -70,9 +70,9 @@ const Vec3f RayTracer::cast(const Ray &ray, const Face &prev_face, const Vec3f &
 	// Generating second rays
 	Vec3f colors[] =
 	{
-		cast(ray.reflect(face, pos), face, pos),	// reflecting ray
-		cast(ray.refract(face, pos), face, pos),	// refracting ray
-		shadow(face, pos)							// shadow ray
+		cast(ray.reflect(face, pos), face),		// reflecting ray
+		cast(ray.refract(face, pos), face),		// refracting ray
+		shadow(face, pos)						// shadow ray
 	};
 	return setFinalColor(colors, 3);
 }
@@ -91,7 +91,7 @@ Vec3f ** RayTracer::render() const {
 			// find primary ray for each pixel
 			Ray primary_ray = find_primary_ray(i, j, camera);
 			// cast the primary ray to space, collecting pixel colors
-			pixels[i][j] = cast(primary_ray, Face(), Vec3f());
+			pixels[i][j] = cast(primary_ray, Face());
 		}
 	}
 	
