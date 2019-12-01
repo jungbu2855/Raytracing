@@ -35,8 +35,12 @@ struct Face {
 /* Representing a point light: position, RGB color, and intensity. */
 struct Light {
 	Vec3f position;			// xyz coordinate		
-	Vec3f color[3];			// RGB color
+	Vec3f color;			// RGB color
 	float intensity = 1.0;	// light intensity, is 1.0 in default.
+
+	// Easy initializer
+	Light(float x, float y, float z, float r, float g, float b, float i)
+		: position(Vec3f(x,y,z)), color(Vec3f(r,g,b)), intensity(i) {}
 };
 
 /* Representing a camera: its members are equivalent to the function parameters
@@ -45,4 +49,12 @@ struct Camera {
 	Vec3f position;		// eye position vector
 	Vec3f center;		// the position which camera looking at
 	Vec3f up;			// the up direction of the camera
+
+	// Easy initializer
+	Camera(float eyex, float eyey, float eyez,
+		float centerx, float centery, float centerz,
+		float upx, float upy, float upz)
+		: position(Vec3f(eyex, eyey, eyez)),
+		center(Vec3f(centerx, centery, centerz)),
+		up(Vec3f(upx, upy, upz)) {}
 };

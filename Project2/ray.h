@@ -16,9 +16,9 @@ private:
 public:
 	// Constructors
 	Ray() : origin(Vec3f()), direction(Vec3f()), color(Vec3f()), intensity(0), collisions(0) {}
-	Ray(Vec3f _origin, Vec3f _direction) : origin(Vec3f()), direction(_direction), color(Vec3f()), intensity(0), collisions(0) {}
-	Ray(Vec3f _origin, Vec3f _direction, Vec3f _color, float _intensity) : origin(Vec3f()), direction(_direction), color(_color), intensity(_intensity), collisions(0) {}
-	Ray(Vec3f _origin, Vec3f _direction, Vec3f _color, float _intensity, int _collisions) : origin(Vec3f()), direction(_direction), color(_color), intensity(_intensity), collisions(_collisions) {}
+	Ray(Vec3f _origin, Vec3f _direction) : origin(Vec3f(_origin)), direction(_direction), color(Vec3f()), intensity(0), collisions(0) {}
+	Ray(Vec3f _origin, Vec3f _direction, Vec3f _color, float _intensity) : origin(Vec3f(_origin)), direction(_direction), color(_color), intensity(_intensity), collisions(0) {}
+	Ray(Vec3f _origin, Vec3f _direction, Vec3f _color, float _intensity, int _collisions) : origin(Vec3f(_origin)), direction(_direction), color(_color), intensity(_intensity), collisions(_collisions) {}
 	Ray(const Ray &_ray) {
 		this->origin = _ray.origin;
 		this->direction = _ray.direction;
@@ -57,7 +57,7 @@ public:
 	// Attenuation
 	void attenuate(const Vec3f &to_pos);
 
-	// Generating a refected ray
+	// Generating a reflected ray
 	Ray reflect(const Ray &incident, const Face &face) const;
 
 	// Generating a refracted ray

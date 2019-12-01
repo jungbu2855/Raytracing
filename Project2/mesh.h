@@ -16,4 +16,10 @@ public:
 	// Constructor: Mesh file read & loader. It does everything needed.
 	Mesh(const char *filename, const Material &mat, int dim = 1);
 	~Mesh();
+
+	// Getters
+	int get_size() { return mesh_size; }
+	int get_dimension() { return mesh_dim; }
+	const Material *get_material() { return &material; }
+	const Face *get_faces() { return faces; }
 };

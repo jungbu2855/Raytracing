@@ -22,7 +22,7 @@ Mesh::Mesh(const char *filename, const Material &mat, int dim) : mesh_dim(dim), 
 	assert(fopen_s(&f, filename, "r") == 0);
 
 	// 1. First line should contain OFF only
-	fscanf_s(f, "%s\n", buf, sizeof buf);
+	fscanf_s(f, "%s\n", buf, (unsigned int )(sizeof buf));
 	assert(strcmp(buf, "OFF") == 0);
 
 	// 2. Second line should contain total number of v, f, and 0
@@ -78,7 +78,7 @@ Mesh::Mesh(const char *filename, const Material &mat, int dim) : mesh_dim(dim), 
 		faces[i].vertices[1] = vertices + idx2;
 		faces[i].vertices[2] = vertices + idx3;
 
-		// Update per-vertex normal
+		// get normal
 		get_normal(faces[i]);
 	}
 
@@ -108,9 +108,9 @@ static void update_maxmin(const Vec3f &v, Vec3f &max, Vec3f &min)
 
 static void get_normal(Face &f)
 {
-	Vec3f vec12 = f.vertices[2] - f.vertices[1];
-	Vec3f vec23 = f.vertices[3] - f.vertices[2];
+	Vec3f vec12 = *f.vertices[1] - *f.vertices[0];
+	Vec3f vec13 = *f.vertices[2] - *f.vertices[0];
 
-	f.normal = vec12.cross(vec23);
+	f.normal = vec12.cross(vec13);
 	f.normal.normalize();
 }
