@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cmath>
+#include <cassert>
 
 static const Ray find_primary_ray(int h, int w, const Camera &camera);
 static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec);
@@ -210,24 +211,10 @@ static Vec3f colorRGBItoRGB(const Vec4f &rgbi) {
 		assert(rgbi[i] >= 0 && rgbi[i] <= 1);
 	assert(rgbi[A] >= 0);
 
-	Vec3f cand ({ rgbi[R] * rgbi[A], rgbi[G] * rgbi[A], rgbi[B] * rgbi[A] });
-	if (rgbi[A] <= 1)
-		return cand;
-	else {
-		Vec3f ret = cand;
-		for (int i = 0; i < 3; i++) {
-			if (cand[i] > 1) {
-				ret[i] = 1;
-				int next = (i + 1) % 3; int nnext = (i + 2) % 3;
-				ret[next] += cand[next] == 1 ? 0 : cand[i] - 1;
-				ret[next] = ret[next] > 1 ? 1 : ret[next];
-				ret[nnext] += cand[nnext] == 1 ? 0 : cand[i] - 1;
-				ret[nnext] = ret[nnext] > 1 ? 1 : ret[nnext];
-			}
-		}
-		return ret;
-	}
-
+	Vec3f ret ({ rgbi[R] * rgbi[A], rgbi[G] * rgbi[A], rgbi[B] * rgbi[A] });
+	for (int i = 0; i < 3; i++) 
+		ret[i] = ret[i] > 1 ? 1 : ret[i];
+	return ret;
 }
 
 /* param:
