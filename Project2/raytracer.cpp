@@ -6,8 +6,9 @@
 
 static const Ray find_primary_ray(int h, int w, const Camera &camera);
 static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec);
-static Vec3f shadow(const Face& face, const Vec3f intersection_pos);
-static Vec3f setFinalColor(const Vec3f *c, int num);
+static Vec3f colorRGBItoRGB(const Vec4f &rgbi);
+static Vec4f shadow(const Face& face, const Vec3f intersection_pos);
+static Vec4f setFinalColor(const Vec4f *c, int num);
 
 struct FaceVec3 {
 	Face  f;
@@ -53,7 +54,8 @@ const bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) 
 	return true;
 }
 
-const Vec3f RayTracer::cast(const Ray &ray, const Face &prev_face) const {
+/* Return value: RGB + light intensity */
+const Vec4f RayTracer::cast(const Ray &ray, const Face &prev_face) const {
 	// Get nearest intersection
 	Face face;
 	Vec3f pos;
@@ -64,11 +66,11 @@ const Vec3f RayTracer::cast(const Ray &ray, const Face &prev_face) const {
 			return shadow(prev_face, ray.getOrigin());
 		}
 		else
-			return { 0,0,0 }; // black for non-intersecting primary rays
+			return { 0,0,0,0 }; // black for non-intersecting primary rays
 	}
 
 	// Generating second rays
-	Vec3f colors[] =
+	Vec4f colors[] =
 	{
 		cast(ray.reflect(face, pos), face),		// reflecting ray
 		cast(ray.refract(face, pos), face),		// refracting ray
@@ -91,7 +93,8 @@ Vec3f ** RayTracer::render() const {
 			// find primary ray for each pixel
 			Ray primary_ray = find_primary_ray(i, j, camera);
 			// cast the primary ray to space, collecting pixel colors
-			pixels[i][j] = cast(primary_ray, Face());
+			Vec4f rgbi = cast(primary_ray, Face());
+			pixels[i][j] = colorRGBItoRGB(rgbi);
 		}
 	}
 	
@@ -181,7 +184,38 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 	return true;
 }
 
-static Vec3f shadow(const Face& face, const Vec3f intersection_pos) {
+static Vec3f colorRGBItoRGB(const Vec4f &rgbi) {
+	// verifying
+	for (int i = 0; i < 3; i++)
+		assert(rgbi[i] >= 0 && rgbi[i] <= 1);
+	assert(rgbi[A] >= 0);
+
+	Vec3f cand ({ rgbi[R] * rgbi[A], rgbi[G] * rgbi[A], rgbi[B] * rgbi[A] });
+	if (rgbi[A] <= 1)
+		return cand;
+	else {
+		Vec3f ret = cand;
+		for (int i = 0; i < 3; i++) {
+			if (cand[i] > 1) {
+				ret[i] = 1;
+				int next = (i + 1) % 3; int nnext = (i + 2) % 3;
+				ret[next] += cand[next] == 1 ? 0 : cand[i] - 1;
+				ret[next] = ret[next] > 1 ? 1 : ret[next];
+				ret[nnext] += cand[nnext] == 1 ? 0 : cand[i] - 1;
+				ret[nnext] = ret[nnext] > 1 ? 1 : ret[nnext];
+			}
+		}
+		return ret;
+	}
+
+}
+
+/* param:
+ *   (Face)face : the face
+ *   (Vec3f)intersection_pos : the intersecting point
+ * returns:
+ *   (Vec4f) Color vector + intensity (RGBI)         */
+static Vec4f shadow(const Face& face, const Vec3f intersection_pos) {
 	Vec3f new_direction;
 	float temp;
 
@@ -192,14 +226,14 @@ static Vec3f shadow(const Face& face, const Vec3f intersection_pos) {
 	// 각각 만들어진 색은 setFinalColor()로 합쳐진 뒤 리턴됩니다.
 
 	Ray new_ray(intersection_pos, new_direction);
-	Vec3f new_color(0, 0, 0);
+	Vec4f new_color(0, 0, 0, 0);
 
-	return { 0,0,0 };
+	return new_color;
 }
 
 /* param:
- *   (Vec3f *)c : collection of colors
- *   (int)num : number of colors       */
-static Vec3f setFinalColor(const Vec3f *c, int num) {
-	return { 0,0,0 };
+ *   (Vec4f *)c : collection of {RGB, intensity}s
+ *   (int)num : number of colors			      */
+static Vec4f setFinalColor(const Vec4f *c, int num) {
+	return { 0,0,0,0 };
 }
