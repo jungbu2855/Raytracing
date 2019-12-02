@@ -7,7 +7,6 @@
 static const Ray find_primary_ray(int h, int w, const Camera &camera);
 static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec);
 static Vec3f colorRGBItoRGB(const Vec4f &rgbi);
-static Vec4f shadow(const Face& face, const Vec3f intersection_pos);
 static Vec4f setFinalColor(const Vec4f *c, int num);
 
 struct FaceVec3 {
@@ -63,10 +62,10 @@ const Vec4f RayTracer::cast(const Ray &ray, const Face &prev_face) const {
 		// Return diffuse color only if it does not have intersections with others
 		if (ray.getCollisions() != 0) {
 			// Shadow ray must be from the non-primary rays
-			return shadow(prev_face, ray.getOrigin());
+			return shadow(ray, prev_face, ray.getOrigin()); // 여기 ray 수정하기
 		}
 		else
-			return { 0,0,0,0 }; // black for non-intersecting primary rays
+			return { 0,0,0,1 }; // black for non-intersecting primary rays
 	}
 
 	// Generating second rays
@@ -74,7 +73,7 @@ const Vec4f RayTracer::cast(const Ray &ray, const Face &prev_face) const {
 	{
 		cast(ray.reflect(face, pos), face),		// reflecting ray
 		cast(ray.refract(face, pos), face),		// refracting ray
-		shadow(face, pos)						// shadow ray
+		shadow(ray, face, pos)					// shadow ray
 	};
 	return setFinalColor(colors, 3);
 }
@@ -100,6 +99,27 @@ Vec3f ** RayTracer::render() const {
 	
 	// Now you have colored whole pixels
 	return pixels;
+}
+
+Vec4f RayTracer::shadow(const Ray &incident, const Face& face, const Vec3f &intersection_pos) const {
+	Vec3f new_direction;
+	float temp;
+
+	// 원래 static 함수였는데 RayTracer의 객체에 접근을 해야 intersect()를 부를 수 있어서 여기에 뒀습니다.
+	// Ray 파라미터를 다시 추가했습니다 (없앴던 것 같은데.. 혼란드려 죄송합니다..) 입사광 방향을 알아야 Phong shading을 하겠네요 ㅠㅠ
+
+	// 구현 방향 :
+	// light[] 각각에 대하여 그 광원을 향하는 빛을 만들어주세요.
+	// 만들어진 shadow ray 마다 intersection test를 수행합니다.
+	// ** intersection이 존재하더라도 광원보다 물체가 뒤에 있으면 통과시켜야 합니다.
+	// 테스트를 통과한 ray마다 해당하는 광원의 색과 material 색을 섞습니다.
+	// ** 이 과정에서 Phong shading, Phong-Blinn shading 아니면 다른 비슷한 모델을 들고오셔서 컬러를 입혀주세요. 저 Ray incident 파라미터가 viewer가 보는 방향, 즉 렉쳐노트의 -V라고 생각하심 되겠습니다.
+	// 각각 만들어진 색은 setFinalColor()로 합쳐진 뒤 리턴됩니다.
+
+	Ray new_ray(intersection_pos, new_direction);
+	Vec4f new_color(0, 0, 0, 1); // 그림자는 0, 0, 0, 1
+
+	return new_color;
 }
 
 static const Ray find_primary_ray(int h, int w, const Camera &camera) {
@@ -208,27 +228,6 @@ static Vec3f colorRGBItoRGB(const Vec4f &rgbi) {
 		return ret;
 	}
 
-}
-
-/* param:
- *   (Face)face : the face
- *   (Vec3f)intersection_pos : the intersecting point
- * returns:
- *   (Vec4f) Color vector + intensity (RGBI)         */
-static Vec4f shadow(const Face& face, const Vec3f intersection_pos) {
-	Vec3f new_direction;
-	float temp;
-
-	// light[] 각각에 대하여 그 광원을 향하는 빛을 만들어주세요.
-	// 만들어진 shadow ray 마다 intersection test를 수행합니다.
-	// ** intersection이 있더라도 광원보다 물체가 뒤에 있으면 통과시켜야 합니다.
-	// intersection을 통과한 ray마다 해당하는 광원의 색과 material 색을 섞습니다.
-	// 각각 만들어진 색은 setFinalColor()로 합쳐진 뒤 리턴됩니다.
-
-	Ray new_ray(intersection_pos, new_direction);
-	Vec4f new_color(0, 0, 0, 0);
-
-	return new_color;
 }
 
 /* param:

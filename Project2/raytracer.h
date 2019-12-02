@@ -35,4 +35,12 @@ public:
 
 	/* render() triggers the whole rendering process. It returns pixels. */
 	Vec3f **render() const;
+
+	/* params:
+	 *   (Ray)incident : incident ray
+	 *   (Face)face : the face
+	 *   (Vec3f)intersection_pos : the intersecting point
+	 * return:
+	 *   (Vec4f) Color vector + intensity (RGBI)         */
+	Vec4f shadow(const Ray &incident, const Face& face, const Vec3f &intersection_pos) const;
 };
