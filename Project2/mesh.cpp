@@ -86,7 +86,7 @@ Mesh::Mesh(const char *filename, const Material &mat, const Mat4f &_model, int d
 
 /* Simple-shape mesh loader */
 /* 웬만하면 유저가 model matrix로 직관적으로 조작할 수 있도록 가로*세로*깊이 모두 1로 맞춰주시고 0,0,0을 중심점으로, z축에 평행하거나 z축 위에 있도록 만들어주세요. */
-Mesh::Mesh(Shape shape, const Material &mat, const Mat4f &_model, int dim = 1) : mesh_dim(dim), material(mat) {
+Mesh::Mesh(Shape shape, const Material &mat, const Mat4f &_model, int dim) : mesh_dim(dim), material(mat) {
 	switch (shape) {
 	case TRIANGLE:
 
@@ -97,7 +97,7 @@ Mesh::Mesh(Shape shape, const Material &mat, const Mat4f &_model, int dim = 1) :
 	case SPHERE:
 
 	default:
-		
+		;
 	}
 }
 

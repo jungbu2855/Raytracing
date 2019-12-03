@@ -2,45 +2,37 @@
 #include "vec.h"
 
 typedef Vec3<float> Vec3f;
+typedef Vec4<float> Vec4f;
 
 class Material {
-	// Todo
 private:
-	Vec3f color;
+	Vec4f color;			// RGBA (RGB + opacity) in [0,1]^4
 	float refraction_index;
-	bool opaque;		//이 물체가 불투명한지 판단하는 건데, refraction_index가 0이면 불투명인걸로 해도 될거 같습니다.
-		
 
 public:
 	//constructor
-	Material() : color(Vec3f()), refraction_index(0), opaque(true) {};
-	Material(Vec3f _color) : refraction_index(0), opaque(true) { this->color = _color; };
-	Material(float _refration_index) : color(Vec3f()), opaque(true) { this->refraction_index = _refration_index; };
-	Material(bool _opaque) : color(Vec3f()), refraction_index(0) { this->opaque = _opaque; };
-	Material(Vec3f _color, float _refration_index) : opaque(true) { this->color = _color; this->refraction_index = _refration_index; };
-	Material(Vec3f _color, bool _opaque) : refraction_index(0) { this->color = _color; this->opaque = _opaque; };
-	Material(float _refraction_index, bool _opaque) : color(Vec3f()) { this->refraction_index = _refraction_index; this->opaque = _opaque; };
-	Material(Vec3f _color, float _refraction_index, bool _opaque) {this->color = _color; this->refraction_index = _refraction_index; this->opaque = _opaque; };
+	Material() : color(Vec4f()), refraction_index(0) {};
+	Material(Vec4f _color) : refraction_index(0) { this->color = _color; };
+	Material(float _refration_index) : color(Vec4f()) { this->refraction_index = _refration_index; };
+	Material(Vec4f _color, float _refration_index) { this->color = _color; this->refraction_index = _refration_index; };
 	Material(const Material& _material) {
 		this->color = _material.color;
 		this->refraction_index = _material.refraction_index;
-		this->opaque = _material.opaque;
 	}
 
 	//Assignment 
 	Material& operator= (const Material& _material) {
 		this->color = _material.color;
 		this->refraction_index = _material.refraction_index;
-		this->opaque = _material.opaque;
 		return *this;
 	}
 
 	//getter and setter function
 	Vec3f getcolor() { return this->color; }
 	float getrefraction_index() { return this->refraction_index; }
-	bool getopaque() { return this->opaque; }
+	float getopaque() { return this->color[3]; }
 
 	void setcolor(Vec3f _color) { this->color = _color; }
 	void setrefraction_index(float _refraction_index) { this->refraction_index = _refraction_index; }
-	void setopaque(bool _opaque) { this->opaque = _opaque; }
+	void setopaque(float _opaque) { this->color[3] = _opaque; }
 };

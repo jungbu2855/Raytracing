@@ -39,12 +39,11 @@ struct Face {
 /* Representing a point light: position, RGB color, and intensity. */
 struct Light {
 	Vec3f position;			// xyz coordinate		
-	Vec3f color;			// RGB color
-	float intensity = 1.0;	// light intensity, is 1.0 in default.
+	Vec4f color;			// RGBI color + intensity
 
 	// Easy initializer
 	Light(float x, float y, float z, float r, float g, float b, float i)
-		: position(Vec3f(x,y,z)), color(Vec3f(r,g,b)), intensity(i) {}
+		: position(Vec3f(x,y,z)), color(Vec4f(r,g,b,i)) {}
 };
 
 /* Representing a camera. Sets view and projection transform parameters.

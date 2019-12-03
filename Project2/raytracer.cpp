@@ -15,8 +15,8 @@ struct FaceVec3 {
 	Vec3f v;
 };
 
-RayTracer::RayTracer(Mesh *_meshes, Light *_lights, const Camera &_camera)
-	: meshes(_meshes), lights(_lights), camera(_camera) {}
+RayTracer::RayTracer(Mesh *_meshes, int _n_meshes, Light *_lights, int _n_lights, const Camera &_camera)
+	: meshes(_meshes), lights(_lights), n_meshes(_n_meshes), n_lights(_n_lights), camera(_camera) {}
 
 const bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const {
 	// Search whole space, find candidates
@@ -103,24 +103,27 @@ Vec3f ** RayTracer::render() const {
 }
 
 Vec4f RayTracer::shadow(const Ray &incident, const Face& face, const Vec3f &intersection_pos) const {
-	Vec3f new_direction;
-	float temp;
+	Vec3f view = -(incident.getDirection());
+	Vec4f *results = new Vec4f[n_lights];
+	for (int i = 0; i < n_lights; i++) {
+		Ray shad (intersection_pos, lights[i].position);
+		Face destf;	Vec3f destv;
+		if (intersect(shad, destf, destv)
+			&& intersection_pos.distance(destv) < intersection_pos.distance(lights[i].position)) {
+			results[i] = { 0, 0, 0, 1 };
+			continue;
+		}
 
-	// 원래 static 함수였는데 RayTracer의 객체에 접근을 해야 intersect()를 부를 수 있어서 여기에 뒀습니다.
-	// Ray 파라미터를 다시 추가했습니다 (없앴던 것 같은데.. 혼란드려 죄송합니다..) 입사광 방향을 알아야 Phong shading을 하겠네요 ㅠㅠ
+		Ray refl = incident.reflect(face, intersection_pos);
+		Vec4f diffuse;
+		for (int j = 0; j < 3; j++) {
+			diffuse[j] = lights[i].color[j] * (face.material->getcolor())[j];
+		}
+		diffuse[3] = face.material->getopaque() * lights[i].color[3] * fmax((shad.getDirection()).dot(face.normal), 0);
+		results[i] = diffuse;
+	}
 
-	// 구현 방향 :
-	// light[] 각각에 대하여 그 광원을 향하는 빛을 만들어주세요.
-	// 만들어진 shadow ray 마다 intersection test를 수행합니다.
-	// ** intersection이 존재하더라도 광원보다 물체가 뒤에 있으면 통과시켜야 합니다.
-	// 테스트를 통과한 ray마다 해당하는 광원의 색과 material 색을 섞습니다.
-	// ** 이 과정에서 Phong shading, Phong-Blinn shading 아니면 다른 비슷한 모델을 들고오셔서 컬러를 입혀주세요. 저 Ray incident 파라미터가 viewer가 보는 방향, 즉 렉쳐노트의 -V라고 생각하심 되겠습니다.
-	// 각각 만들어진 색은 setFinalColor()로 합쳐진 뒤 리턴됩니다.
-
-	Ray new_ray(intersection_pos, new_direction);
-	Vec4f new_color(0, 0, 0, 1); // 그림자는 0, 0, 0, 1
-
-	return new_color;
+	return setFinalColor(results, n_lights);
 }
 
 static const Ray find_primary_ray(int h, int w, const Camera &camera) {

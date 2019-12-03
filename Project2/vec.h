@@ -65,6 +65,13 @@ public:
 	const Vec4<T> operator* (T c) const {								// scalar *
 		return Vec4<T>(c*e[0], c*e[1], c*e[2], c*e[3]);
 	}
+	const Vec4<T> operator/ (T c) const {								// scalar /
+		return Vec4<T>(c/e[0], c/e[1], c/e[2], c/e[3]);
+	}
+	const Vec4<T> operator* (const Vec4<T> &right) const {			// component-wise *
+		return Vec4<T>(this->e[0] * right.e[0], this->e[1] * right.e[1],
+			this->e[2] * right.e[2], this->e[3] * right.e[3]);
+	}
 	friend const Vec4<T> operator* (T c, const Vec4<T> &right) {
 		return Vec4<T>(c*right.e[0], c*right.e[1], c*right.e[2], c*right.e[3]);
 	}
@@ -81,6 +88,11 @@ public:
 	Vec4<T> &operator*= (T c) {											// *= (scalar)
 		for (int i = 0; i < 4; i++)
 			this->e[i] *= c;
+		return *this;
+	}
+	Vec4<T> &operator*= (const Vec4<T> &right) {				// *= (component-wise)
+		for (int i = 0; i < 4; i++)
+			this->e[i] *= right.e[i];
 		return *this;
 	}
 	friend ostream& operator<< (ostream& os, const Vec4<T> &right) {	// <<
@@ -185,6 +197,10 @@ public:
 	const Vec3<T> operator* (T c) const {								// scalar *
 		return Vec3<T>(c*e[0], c*e[1], c*e[2]);
 	}
+	const Vec3<T> operator* (const Vec3<T> &right) const {			// component-wise *
+		return Vec3<T>(this->e[0] * right.e[0], this->e[1] * right.e[1],
+			this->e[2] * right.e[2]);
+	}
 	const Vec3<T> operator/ (T c) const {								// scalar /
 		return Vec3<T>(e[0] / c, e[1] / c, e[2] / c);
 	}
@@ -204,6 +220,11 @@ public:
 	Vec3<T> &operator*= (T c) {											// *= (scalar)
 		for (int i = 0; i < 3; i++)
 			this->e[i] *= c;
+		return *this;
+	}
+	Vec3<T> &operator*= (const Vec3<T> &right) {				// *= (component-wise)
+		for (int i = 0; i < 3; i++)
+			this->e[i] *= right.e[i];
 		return *this;
 	}
 	Vec3<T> &operator/= (T c) {											// /= (scalar)

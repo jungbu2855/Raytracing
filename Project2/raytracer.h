@@ -16,8 +16,11 @@ private:
 	Light    *lights;
 	Camera    camera;
 
+	int n_meshes;
+	int n_lights;
+
 public:
-	RayTracer(Mesh *_meshes, Light *_lights, const Camera &_camera); // initializer
+	RayTracer(Mesh *_meshes, int n_meshes, Light *_lights, int n_lights, const Camera &_camera); // initializer
 
 	/* intersection() gives whether the ray intersects with faces in the space.
 	 * params: ray      - the ray casted

@@ -47,7 +47,7 @@ int execute() {
 	);
 
 	// Run
-	RayTracer rayTracer(meshes, lights, camera);
+	RayTracer rayTracer(meshes, 1, lights, 1, camera);
 	Face f;
 	Vec3f v;
 	Ray ray;
