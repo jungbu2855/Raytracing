@@ -6,6 +6,13 @@
 /* Mesh class loads a triangular mesh from the .off formatted
  * file, computes the face normals, and fetches material property. */
 class Mesh {
+public:
+	enum Shape {
+		TRIANGLE,
+		SQUARE,
+		CUBE,
+		SPHERE
+	};
 private:
 	Vec3f *vertices;	// All vertices it contains
 	Face *faces;		// (coords, normals, *material prop)
@@ -15,6 +22,7 @@ private:
 public:
 	// Constructor: Mesh file read & loader. It does everything needed.
 	Mesh(const char *filename, const Material &mat, const Mat4f &_model, int dim = 1);
+	Mesh(Shape shape, const Material &mat, const Mat4f &_model, int dim = 1);
 	~Mesh();
 
 	// Getters
