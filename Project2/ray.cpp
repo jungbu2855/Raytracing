@@ -87,7 +87,7 @@ Ray Ray::refract(const Face& face, const Vec3f &intersection_pos) const {
 	n = refindex_next / refindex_prev;
 
 	//if the opacity of face.material is 1, this material has no tranmitted ray.
-	if (face.material->getopaque() != 1) {
+	if (face.material->getopacity() != 1) {
 		float middle = 1 - (n * n) * (1 - NI * NI);
 		new_direction = (n * NI - sqrt(middle)) * face.normal - n * this->getDirection();
 
@@ -100,7 +100,7 @@ Ray Ray::refract(const Face& face, const Vec3f &intersection_pos) const {
 		Ray newray_temp(this->getOrigin(), this->getDirection(), this->getIntensity());
 		newray_temp.attenuate(intersection_pos);
 
-		new_ray.setIntensity(newray_temp.getIntensity() * (1 - face.material->getopaque()));
+		new_ray.setIntensity(newray_temp.getIntensity() * (1 - face.material->getopacity()));
 
 		//add one to the collision number
 		int new_collisions = this->getCollisions() + 1;

@@ -119,7 +119,7 @@ Vec4f RayTracer::shadow(const Ray &incident, const Face& face, const Vec3f &inte
 		for (int j = 0; j < 3; j++) {
 			diffuse[j] = lights[i].color[j] * (face.material->getcolor())[j];
 		}
-		diffuse[3] = face.material->getopaque() * lights[i].color[3] * fmax((shad.getDirection()).dot(face.normal), 0);
+		diffuse[3] = face.material->getopacity() * lights[i].color[3] * fmax((shad.getDirection()).dot(face.normal), 0);
 		results[i] = diffuse;
 	}
 
