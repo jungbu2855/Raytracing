@@ -5,6 +5,8 @@
 #include "material.h"
 #include "raytracer.h"
 #include "definitions.h"
+#include "octree.h"
+
 using namespace std;
 
 #define NUM_OBJS_TO_BE_RENDERED 1
@@ -12,6 +14,17 @@ using namespace std;
 int execute();
 
 int main() {
+	Octree o;
+	Face *fp = new Face();
+	fp->vertices[0] = new Vec3f(0., 1., 2.);
+	fp->vertices[1] = new Vec3f(1., 2., 3.);
+	fp->vertices[2] = new Vec3f(-2., 3., 4.);
+	Face *fp2 = new Face();
+	fp2->vertices[0] = new Vec3f(1.5, 0.5, -0.5);
+	fp2->vertices[1] = new Vec3f(0.5, -0.5, -1.5);
+	fp2->vertices[2] = new Vec3f(-0.5, -1.5, -2.5);
+	Face *fpp[2] = { fp, fp2 };
+	o.insertAll(fpp, 2);
 
 	return execute();
 }
@@ -53,5 +66,6 @@ int execute() {
 	Ray ray;
 	if (rayTracer.intersect(Ray({ 0,0,-2 }, { 0,0,1 }), f, v))
 		cout << v << endl;
+	cout << (abs(v[X] - 0.) < FLT_EPSILON ? "TRUE" : "FALSE") << endl;
 	return 0;
 }

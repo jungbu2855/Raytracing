@@ -7,6 +7,10 @@
 	#define M_PI 3.14159265358979323846f
 #endif
 
+#ifndef INFTY
+	#define INFTY 65535
+#endif
+
 // [Vec/Mat][3/4]<float> Shortcuts
 typedef Vec3<float> Vec3f;
 typedef Vec4<float> Vec4f;
