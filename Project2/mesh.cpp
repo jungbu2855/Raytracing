@@ -12,7 +12,7 @@ static float INF = 1000;
 static void update_maxmin(const Vec3f &v, Vec3f &max, Vec3f &min);
 static void get_normal(Face &f);
 
-Mesh::Mesh(const char *filename, const Material &mat, const Mat4f &_model, int dim) : mesh_dim(dim), material(mat)
+Mesh::Mesh(const char *filename, Material &mat, const Mat4f &_model, int dim) : mesh_dim(dim), material(mat)
 {
 	FILE *f;
 	char buf[64];
@@ -79,6 +79,8 @@ Mesh::Mesh(const char *filename, const Material &mat, const Mat4f &_model, int d
 
 		// get normal
 		get_normal(faces[i]);
+
+		faces[i].material = &mat;
 	}
 
 	cout << "Faces read" << endl;

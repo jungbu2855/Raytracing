@@ -72,11 +72,11 @@ const Vec4f RayTracer::cast(const Ray &ray, const Face &prev_face) const {
 	// Generating second rays
 	Vec4f colors[] =
 	{
-		cast(ray.reflect(face, pos), face),		// reflecting ray
-		cast(ray.refract(face, pos), face),		// refracting ray
+		//cast(ray.reflect(face, pos), face),		// reflecting ray
+		//cast(ray.refract(face, pos), face),		// refracting ray
 		shadow(ray, face, pos)					// shadow ray
 	};
-	return setFinalColor(colors, 3);
+	return setFinalColor(colors, 1);
 }
 
 Vec3f ** RayTracer::render() const {
@@ -88,6 +88,7 @@ Vec3f ** RayTracer::render() const {
 		pixels[i] = new Vec3f[width];
 	
 	// Main behavior
+	cout << "Complete:";
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {
 			// find primary ray for each pixel
@@ -96,6 +97,8 @@ Vec3f ** RayTracer::render() const {
 			Vec4f rgbi = cast(primary_ray, Face());
 			pixels[i][j] = colorRGBItoRGB(rgbi);
 		}
+		if (i % ((height >= 100) ? (height / 100) : (1)) == 0)
+			cout << "#";
 	}
 	
 	// Now you have colored whole pixels
@@ -224,5 +227,17 @@ static Vec3f colorRGBItoRGB(const Vec4f &rgbi) {
  *   (Vec4f *)c : collection of {RGB, intensity}s
  *   (int)num : number of colors			      */
 static Vec4f setFinalColor(const Vec4f *c, int num) {
-	return { 0,0,0,0 };
+	Vec4f color = { 0,0,0,0 };
+	for (int i = 0; i < num; i++) {
+		color[R] += c[i][R] * c[i][A];
+		color[G] += c[i][G] * c[i][A];
+		color[B] += c[i][B] * c[i][A];
+		color[A] += c[i][A];
+	}
+
+	for (int i = 0; i < 4; i++) {
+		color[i] = color[i] / color[A];
+		color[i] = color[i] > 1. ? 1. : color[i];
+	}
+	return color;
 }

@@ -136,6 +136,13 @@
     <ClInclude Include="ray.h" />
     <ClInclude Include="raytracer.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="90-90.bmp" />
+    <Image Include="900-900.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bunny.off" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

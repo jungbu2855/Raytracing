@@ -21,7 +21,7 @@ private:
 	Material material;	// Material property
 public:
 	// Constructor: Mesh file read & loader. It does everything needed.
-	Mesh(const char *filename, const Material &mat, const Mat4f &_model, int dim = 1);
+	Mesh(const char *filename, Material &mat, const Mat4f &_model, int dim = 1);
 	Mesh(Shape shape, const Material &mat, const Mat4f &_model, int dim = 1);
 	~Mesh();
 

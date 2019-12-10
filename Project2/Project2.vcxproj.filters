@@ -60,4 +60,17 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="90-90.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="900-900.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bunny.off">
+      <Filter>리소스 파일</Filter>
+    </None>
+  </ItemGroup>
 </Project>

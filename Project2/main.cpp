@@ -41,7 +41,7 @@ int execute() {
 	Mat4f models[NUM_OBJS_TO_BE_RENDERED];
 
 	// Object 0:
-	material[0] = Material();	// Material property
+	material[0] = Material(.8, 100.0, 0.0);	// Material property
 	models[0].loadIdentity();	// Model transform matrix
 
 	Mesh meshes[NUM_OBJS_TO_BE_RENDERED] = {
@@ -50,7 +50,7 @@ int execute() {
 
 	// Configure lights
 	Light lights[] = {
-		Light(0, 10, 0, 1, 1, 1, 1)
+		Light(0, 10, 0, .7, .9, 1, 1)
 	};
 
 	// Configure camera
@@ -58,7 +58,7 @@ int execute() {
 		0, 0, 2,	// eye
 		0, 0, 0,	// center
 		0, 1, 0,	// up
-		900,		// img height
+		90,			// img height
 		60,			// fovy
 		1.,			// aspect
 		0.5, 10		// zNear, zFar
@@ -66,11 +66,16 @@ int execute() {
 
 	// Run
 	RayTracer rayTracer(meshes, 1, lights, 1, camera);
-	Face f;
-	Vec3f v;
-	Ray ray;
-	if (rayTracer.intersect(Ray({ 0,0,-2 }, { 0,0,1 }), f, v))
-		cout << v << endl;
-	cout << (abs(v[X] - 0.) < FLT_EPSILON ? "TRUE" : "FALSE") << endl;
+	Vec3f** result = rayTracer.render();
+	uchar4 converted[90][90];
+	for (int i = 0; i < 90; i++) {
+		for (int j = 0; j < 90; j++) {
+			converted[i][j].x = result[i][j][R] * 255;
+			converted[i][j].y = result[i][j][G] * 255;
+			converted[i][j].z = result[i][j][B] * 255;
+		}
+	}
+
+	SaveBMPFile((uchar4 *)converted, 90, 90, "BUNNY.BMP", "90-90.bmp");
 	return 0;
 }
