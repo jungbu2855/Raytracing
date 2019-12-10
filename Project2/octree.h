@@ -16,7 +16,6 @@ constexpr byte MASK_Z = 0b0100;
 /* 인접노드 구하기 - parent-parent-(교점이 내부에 존재할 때까지)-parent-child-child-(leaf일 때까지)-child */
 class Octree {
 public:
-	/* This cube includes boundary */
 	class OctreeNode {
 	private:
 		vector<Face *> faceptrs;	// faces are passed by pointers for mem eff

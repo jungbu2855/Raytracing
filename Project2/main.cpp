@@ -16,16 +16,21 @@ int execute();
 int main() {
 	Octree o;
 	Face *fp = new Face();
-	fp->vertices[0] = new Vec3f(0., 1., 2.);
-	fp->vertices[1] = new Vec3f(1., 2., 3.);
-	fp->vertices[2] = new Vec3f(-2., 3., 4.);
+	fp->vertices[0] = new Vec3f(0., 1., -0.);
+	fp->vertices[1] = new Vec3f(1., 1.01, -0.01);
+	fp->vertices[2] = new Vec3f(2., 1.02, -0.001);
 	Face *fp2 = new Face();
 	fp2->vertices[0] = new Vec3f(1.5, 0.5, -0.5);
 	fp2->vertices[1] = new Vec3f(0.5, -0.5, -1.5);
 	fp2->vertices[2] = new Vec3f(-0.5, -1.5, -2.5);
 	Face *fpp[2] = { fp, fp2 };
 	o.insertAll(fpp, 2);
-
+	
+	Octree::OctreeNode n;
+	vector<Face *> vec;
+	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);
+	n.push_faces(vec);
+	cout << n.isLeaf() << endl;
 	return execute();
 }
 
