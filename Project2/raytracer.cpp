@@ -5,10 +5,17 @@
 #include <cmath>
 #include <cassert>
 
+#include <thread>
+
 static const Ray find_primary_ray(int h, int w, const Camera &camera);
 static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec);
 static Vec3f colorRGBItoRGB(const Vec4f &rgbi);
 static Vec4f setFinalColor(const Vec4f *c, int num);
+
+static Vec3f **pixels;
+static thread *threads;
+
+constexpr int MAX_RAY_DEPTH = 5;
 
 struct FaceVec3 {
 	Face  f;
@@ -55,7 +62,10 @@ const bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) 
 }
 
 /* Return value: RGB + light intensity */
-const Vec4f RayTracer::cast(const Ray &ray, const Face &prev_face) const {
+const Vec4f RayTracer::cast(const Ray &ray, const Face &prev_face, int depth) const {
+	// Early termination
+	if (depth > MAX_RAY_DEPTH || ray.getIntensity() == 0)
+		return { 0,0,0,0 };	// Transparent (no color)
 	// Get nearest intersection
 	Face face;
 	Vec3f pos;
@@ -72,30 +82,39 @@ const Vec4f RayTracer::cast(const Ray &ray, const Face &prev_face) const {
 	// Generating second rays
 	Vec4f colors[] =
 	{
-		//cast(ray.reflect(face, pos), face),		// reflecting ray
-		//cast(ray.refract(face, pos), face),		// refracting ray
+		cast(ray.reflect(face, pos), face, depth+1),		// reflecting ray
+		//cast(ray.refract(face, pos), face, depth+1),		// refracting ray
 		shadow(ray, face, pos)					// shadow ray
 	};
-	return setFinalColor(colors, 1);
+	return setFinalColor(colors, 2);
+}
+
+void render_helper(int i, int j, const Camera &cam, const RayTracer &inst) {
+	// find primary ray for each pixel
+	Ray primary_ray = find_primary_ray(i, j, cam);
+	// cast the primary ray to space, collecting pixel colors
+	Vec4f rgbi = inst.cast(primary_ray, Face(), 0);
+	pixels[i][j] = colorRGBItoRGB(rgbi);
 }
 
 Vec3f ** RayTracer::render() const {
 	// init local vars
 	int height = camera.height;
 	int width = camera.height * camera.aspect_ratio;
-	Vec3f **pixels = new Vec3f*[height];	// RGB pixel container
+	pixels = new Vec3f*[height];	// RGB pixel container
 	for (int i = 0; i < height; i++)
 		pixels[i] = new Vec3f[width];
+
+	threads = new thread[width];
 	
 	// Main behavior
 	cout << "Complete:";
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {
-			// find primary ray for each pixel
-			Ray primary_ray = find_primary_ray(i, j, camera);
-			// cast the primary ray to space, collecting pixel colors
-			Vec4f rgbi = cast(primary_ray, Face());
-			pixels[i][j] = colorRGBItoRGB(rgbi);
+			threads[j] = thread(render_helper, i, j, camera, *this);
+		}
+		for (int j = 0; j < width; j++) {
+			threads[j].join();
 		}
 		if (i % ((height >= 100) ? (height / 100) : (1)) == 0)
 			cout << "#";
@@ -165,7 +184,7 @@ static const Ray find_primary_ray(int h, int w, const Camera &camera) {
 	view = rotate(angle, axis) * Mat4f(view3);
 
 	ray_dir = Mat3f(view) * ray_dir;
-	return Ray(origin, ray_dir);
+	return Ray(origin, ray_dir, 1);
 }
 
 static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
@@ -174,7 +193,7 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 	// parallel test
 	// It does not consider when the ray is INSIDE the face plane
 	float r = n.dot(ray.getDirection());
-	if (r == 0) {
+	if (abs(r) < FLT_EPSILON) {
 		return false;
 	}
 
@@ -226,6 +245,7 @@ static Vec3f colorRGBItoRGB(const Vec4f &rgbi) {
 /* param:
  *   (Vec4f *)c : collection of {RGB, intensity}s
  *   (int)num : number of colors			      */
+// 일단 테스트 용으로 제 맘대로 만들었는데 아마 어딘가 바뀌어야할 것 같아요
 static Vec4f setFinalColor(const Vec4f *c, int num) {
 	Vec4f color = { 0,0,0,0 };
 	for (int i = 0; i < num; i++) {

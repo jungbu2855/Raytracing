@@ -34,7 +34,7 @@ public:
 	 * params: ray       - the ray that will be casted
 	 *         prev_face - the face that ray origin resides
 	 * return value: RGB color of the ray casted           */
-	const Vec4f cast(const Ray &ray, const Face &prev_face) const;
+	const Vec4f cast(const Ray &ray, const Face &prev_face, int depth) const;
 
 	/* render() triggers the whole rendering process. It returns pixels. */
 	Vec3f **render() const;

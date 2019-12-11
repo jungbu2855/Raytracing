@@ -9,7 +9,7 @@
 
 using namespace std;
 
-#define NUM_OBJS_TO_BE_RENDERED 1
+constexpr int NUM_OBJS_TO_BE_RENDERED = 1;
 
 int execute();
 
@@ -41,7 +41,7 @@ int execute() {
 	Mat4f models[NUM_OBJS_TO_BE_RENDERED];
 
 	// Object 0:
-	material[0] = Material(.8, 100.0, 0.0);	// Material property
+	material[0] = Material(.8, 100.0, 0.1);	// Material property
 	models[0].loadIdentity();	// Model transform matrix
 
 	Mesh meshes[NUM_OBJS_TO_BE_RENDERED] = {
