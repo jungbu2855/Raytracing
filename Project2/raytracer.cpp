@@ -45,7 +45,11 @@ RayTracer::RayTracer(Mesh *_meshes, int _n_meshes, Light *_lights, int _n_lights
 	delete allFaces;
 }
 
-const bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const {
+bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const {
+	return octree->getNearestIntersect(ray, ret_face, ret_vec);
+}
+
+bool RayTracer::intersect_slow(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const {
 	// Search whole space, find candidates
 	vector<FaceVec3> candidates;
 	for (int i = 0; i < meshes->get_size(); i++) {

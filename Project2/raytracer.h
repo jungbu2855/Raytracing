@@ -27,7 +27,8 @@ public:
 	 *         ret_face - the face that would be returned as intersection face
 	 *		   ret_vec  - the point that would be returned as intersection point
 	 * return value: true if there is any face intersecting                      */
-	const bool intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const;
+	bool intersect_slow(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const;
+	bool intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const;
 
 	/* cast() does intersection test with the given ray,
 	 * generating new rays, and determining colors.

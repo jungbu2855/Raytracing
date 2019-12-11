@@ -2,6 +2,7 @@
 
 #include "vec.h"
 #include "material.h"
+#include "ray.h"
 #include "definitions.h"
 
 #include <vector>
@@ -36,8 +37,11 @@ public:
 		bool isRoot() const;				// is this node root? (no parent)
 		bool isEmpty() const;				// is this node empty?
 		
-		int getSize() const;					// get number of faces
-		OctreeNode *getChild(byte idx) const;	// get a child
+		int getSize() const;						// get number of faces
+		OctreeNode *getChild(byte idx) const;		// get a child
+		bool nearestIntersect(const Ray &ray,		// nearest intersection for the ray
+			Face &ret_face, float &ret_r) const;
+		bool penetratedBy(const Ray &ray) const;	// does the ray pass through?
 	};
 private:
 	OctreeNode *root;
@@ -46,12 +50,7 @@ public:
 	Octree(Face **_faceptrs, int len);
 	~Octree();
 
-	// Insert, remove
-	void remove(Face *_faceptr);
-
-	// Booleans
-	bool isEmpty() const;
-
 	// Traverse
 	void showAll(OctreeNode *ptr = nullptr) const;
+	bool getNearestIntersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const;
 };

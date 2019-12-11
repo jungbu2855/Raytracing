@@ -38,6 +38,7 @@ static const Vec3f min(const Vec3f &l, const Vec3f &r);
 static const Vec3f max(const Vec3f &l, const Vec3f &r);
 static const Vec3f findDividingCenter(vector<Face *> facePtrs);
 static byte findChild(const Face &f, const Vec3f &cubeLow, const Vec3f &cubeMid, const Vec3f &cubeHigh);
+static float intersect_face(const Ray &ray, const Face &face);
 
 Octree::Octree(Face ** _faceptrs, int len) {
 	vector<Face *> __faceptrs;
@@ -54,14 +55,25 @@ Octree::~Octree() {
 void Octree::showAll(Node *ptr) const {
 	if (ptr == nullptr)
 		ptr = root;
-
+	static int size = 0;
+	
 	if (!ptr->isLeaf()) {
-		cout << ptr->getSize() << " ";
 		for (int i = 0; i < 8; i++)
 			showAll(ptr->getChild(i));
 	}
 }
 
+bool Octree::getNearestIntersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const {
+	if (!root->penetratedBy(ray))
+		return false;
+	float r;
+	if (root->nearestIntersect(ray, ret_face, r)) {
+		ret_vec = ray.getOrigin() + r * ray.getDirection();
+		return true;
+	}
+	else
+		return false;
+}
 
 
 
@@ -130,6 +142,73 @@ Node *Node::getChild(byte idx) const {
 	return children[idx];
 }
 
+bool Node::nearestIntersect(const Ray &ray, Face &ret_face, float &ret_r) const {
+	Face candidate_f;
+	float min_r = INFTY;
+	for (vector<Face *>::const_iterator it = faceptrs.begin(); it != faceptrs.end(); ++it) {
+		float candidate_r = intersect_face(ray, **it);
+		if (candidate_r != -1 && candidate_r < min_r) {
+			candidate_f = **it;
+			min_r = candidate_r;
+		}
+	}
+
+	if (isLeaf()) {
+		if (min_r != INFTY) {
+			ret_face = candidate_f;
+			ret_r = min_r;
+			return true;
+		}
+		else
+			return false;
+	}
+
+	// Iterate on the children
+	for (int i = 0; i < 8; i++) {
+		if (children[i]->penetratedBy(ray)) {
+			Face r_face;
+			float r_r;
+			if (children[i]->nearestIntersect(ray, r_face, r_r) &&
+				r_r < min_r) {
+				min_r = r_r;
+				candidate_f = r_face;
+			}
+		}
+	}
+
+	if (min_r != INFTY) {
+		ret_face = candidate_f;
+		ret_r = min_r;
+		return true;
+	}
+	else
+		return false;
+}
+
+bool Node::penetratedBy(const Ray &ray) const {
+	Vec3f o = ray.getOrigin();
+	Vec3f d = ray.getDirection();
+
+	Vec3f low = {
+		(lowest[X] - o[X]) / d[X],
+		(lowest[Y] - o[Y]) / d[Y],
+		(lowest[Z] - o[Z]) / d[Z] };
+	Vec3f high = {
+		(highest[X] - o[X]) / d[X],
+		(highest[Y] - o[Y]) / d[Y],
+		(highest[Z] - o[Z]) / d[Z],
+	};
+
+	Vec3f temp = min(low, high);
+	float r_near = temp[X] > temp[Y] ? temp[X] : temp[Y];
+	r_near = r_near > temp[Z] ? r_near : temp[Z];
+	
+	temp = max(low, high);
+	float r_far = temp[X] < temp[Y] ? temp[X] : temp[Y];
+	r_far = r_far < temp[Z] ? r_far : temp[Z];
+
+	return r_far > r_near;
+}
 
 
 
@@ -235,4 +314,47 @@ static byte findChild(const Face &f, const Vec3f &cubeLow, const Vec3f &cubeMid,
 		return (byte)(-1);
 
 	return ((xxyyzz & 0b100000) >> 3) | ((xxyyzz & 0b001000) >> 2) | ((xxyyzz & 0b000010) >> 1);
+}
+
+static float intersect_face(const Ray &ray, const Face &face) {
+	Vec3f n = face.normal;
+
+	// parallel test
+	// It does not consider when the ray is INSIDE the face plane
+	float r = n.dot(ray.getDirection());
+	if (abs(r) < FLT_EPSILON) {
+		return -1;
+	}
+
+	Vec3f v0 = *face.vertices[0];
+	Vec3f p0 = ray.getOrigin();
+	r = (n.dot(v0 - p0)) / r;
+
+	// direction test
+	if (r < 0) {
+		return -1;
+	}
+
+	Vec3f p_i = p0 + r * ray.getDirection();
+
+	Vec3f u = *face.vertices[1] - *face.vertices[0];
+	Vec3f v = *face.vertices[2] - *face.vertices[0];
+	Vec3f w = p_i - v0;
+
+	float uv = u.dot(v);	float wv = w.dot(v);
+	float vv = v.dot(v);	float wu = w.dot(u);
+	float uu = u.dot(u);
+	float uv2_uuvv = uv * uv - uu * vv;
+
+	float s = (uv * wv - vv * wu) / uv2_uuvv;
+	float t = (uv * wu - uu * wv) / uv2_uuvv;
+
+	// s, t range test
+	if (s < 0 || t < 0 || s + t > 1) {
+		return -1;
+	}
+
+	// Now we know that the ray intersects with the face
+	// Return parameter of the ray
+	return r;
 }
