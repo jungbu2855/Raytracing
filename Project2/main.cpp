@@ -14,7 +14,6 @@ constexpr int NUM_OBJS_TO_BE_RENDERED = 1;
 int execute();
 
 int main() {
-	Octree o;
 	Face *fp = new Face();
 	fp->vertices[0] = new Vec3f(0., 1., -0.);
 	fp->vertices[1] = new Vec3f(1., 1.01, -0.01);
@@ -24,12 +23,12 @@ int main() {
 	fp2->vertices[1] = new Vec3f(0.5, -0.5, -1.5);
 	fp2->vertices[2] = new Vec3f(-0.5, -1.5, -2.5);
 	Face *fpp[2] = { fp, fp2 };
-	o.insertAll(fpp, 2);
+//	o.insertAll(fpp, 2);
 	
 	Octree::OctreeNode n;
 	vector<Face *> vec;
-	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);
-	n.push_faces(vec);
+//	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);	vec.push_back(fp); vec.push_back(fp2);
+//	n.push_faces(vec);
 	cout << n.isLeaf() << endl;
 	return execute();
 }
@@ -50,7 +49,8 @@ int execute() {
 
 	// Configure lights
 	Light lights[] = {
-		Light(0, 10, 0, .7, .9, 1, 1)
+		Light(0, 10, 0, .5, .5, .9, 1),
+		Light(-10, 0, 10, .3, .9, .5, 1)
 	};
 
 	// Configure camera
@@ -65,7 +65,7 @@ int execute() {
 	);
 
 	// Run
-	RayTracer rayTracer(meshes, 1, lights, 1, camera);
+	RayTracer rayTracer(meshes, sizeof meshes / sizeof (Mesh), lights, sizeof lights / sizeof (Light), camera);
 	Vec3f** result = rayTracer.render();
 	uchar4 converted[90][90];
 	for (int i = 0; i < 90; i++) {

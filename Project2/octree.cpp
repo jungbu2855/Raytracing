@@ -3,6 +3,7 @@
 
 #include <queue>
 #include <functional>
+#include <cassert>
 
 using namespace std; 
 
@@ -36,10 +37,13 @@ static const Vec3f findHighest(const vector<Face *> &_fptrs);
 static const Vec3f min(const Vec3f &l, const Vec3f &r);
 static const Vec3f max(const Vec3f &l, const Vec3f &r);
 static const Vec3f findDividingCenter(vector<Face *> facePtrs);
-byte findChild(const Face &f, const Vec3f &cubeLow, const Vec3f &cubeMid, const Vec3f &cubeHigh);
+static byte findChild(const Face &f, const Vec3f &cubeLow, const Vec3f &cubeMid, const Vec3f &cubeHigh);
 
-Octree::Octree() {
-	root = new OctreeNode();
+Octree::Octree(Face ** _faceptrs, int len) {
+	vector<Face *> __faceptrs;
+	for (int i = 0; i < len; i++)
+		__faceptrs.push_back(_faceptrs[i]);
+	root = new OctreeNode(__faceptrs, nullptr, -1);
 }
 
 Octree::~Octree() {
@@ -47,20 +51,54 @@ Octree::~Octree() {
 		delete root;
 }
 
-void Octree::insertAll(Face **_faceptrs, int len) {
-	vector<Face *> faceptrs;
-	for (int i = 0; i < len; i++)
-		faceptrs.push_back(_faceptrs[i]);
-	root->push_faces(faceptrs);
+void Octree::showAll(Node *ptr) const {
+	if (ptr == nullptr)
+		ptr = root;
+
+	if (!ptr->isLeaf()) {
+		cout << ptr->getSize() << " ";
+		for (int i = 0; i < 8; i++)
+			showAll(ptr->getChild(i));
+	}
 }
+
+
+
 
 Node::OctreeNode()
 	: lowest(Vec3f(INFTY)), highest(Vec3f(-INFTY)), dividing_center(Vec3f(0.)),
-	parent(nullptr), children(nullptr),	n_faceptrs(0), index(-1) {}
+	parent(nullptr), children(nullptr), index(-1) {}
 
-Node::OctreeNode(OctreeNode *_parent, byte _index)
-	: lowest(Vec3f(INFTY)), highest(Vec3f(-INFTY)), dividing_center(Vec3f(0.)),
-	parent(_parent), children(nullptr),	n_faceptrs(0), index(_index) {}
+Node::OctreeNode(const vector<Face *> &_faceptrs, OctreeNode *_parent, byte _index)
+	: faceptrs(_faceptrs), parent(_parent), index(_index) {
+	lowest = findLowest(faceptrs);
+	highest = findHighest(faceptrs);
+	children = nullptr;
+
+	if (faceptrs.size() < MAX_CHILDREN_PER_NODE) {
+		return;
+	}
+
+	Vec3f center = findDividingCenter(faceptrs);
+	vector<Face *> myChildren[8]{};
+	for (vector<Face *>::iterator it = faceptrs.begin(); it != faceptrs.end();) {
+		byte idx = findChild(**it, lowest, center, highest);
+		if (idx != (byte)-1) {
+			myChildren[idx].push_back(*it);
+			it = faceptrs.erase(it);
+		}
+		else
+			++it;
+	}
+
+	if (faceptrs.size() != _faceptrs.size()) {
+		dividing_center = center;
+		children = new Node*[8];
+		for (int i = 0; i < 8; i++) {
+			children[i] = new Node(myChildren[i], this, i);
+		}
+	}
+}
 
 Node::~OctreeNode() {
 	faceptrs.clear();
@@ -80,67 +118,21 @@ bool Node::isRoot() const {
 }
 
 bool Node::isEmpty() const {
-	return n_faceptrs == 0;
+	return faceptrs.size() == 0;
 }
 
 int Node::getSize() const {
-	return n_faceptrs;
+	return faceptrs.size();
 }
 
-void Node::push_faces(const vector<Face *> &_fptrs, const Vec3f &_lowest, const Vec3f &_highest) {
-	if (_lowest[X] == INFTY)
-		lowest = min(lowest, findLowest(_fptrs));
-	if (_highest[X] == -INFTY)
-		highest = max(highest, findHighest(_fptrs));
-	
-	// Terminating condition
-	if (n_faceptrs + _fptrs.size() < MAX_CHILDREN_PER_NODE) {
-		// Load faces
-		for (int i = 0; i < _fptrs.size(); ++i) {
-			faceptrs.push_back(_fptrs[i]);
-		}
-		n_faceptrs += _fptrs.size();
-		return;
-	}
-
-	// Make children if not exists
-	if (isLeaf()) {
-		children = new Node *[8];
-		for (int i = 0; i < 8; i++)
-			children[i] = new Node(this, i);
-		dividing_center = findDividingCenter(_fptrs);
-	}
-
-	// Trickle down the faces
-	vector<Face *> fptrsForChildren[8];
-	for (vector<Face *>::const_iterator it = _fptrs.begin(); it != _fptrs.end(); ++it) {
-		Face f = **it;
-		
-		// find the child who will have the face
-		byte idx = findChild(f, lowest, dividing_center, highest);
-		if (idx == (byte)(-1)) {
-			faceptrs.push_back(&f);
-			n_faceptrs++;
-			continue;
-		}
-		fptrsForChildren[idx].push_back(&f);
-	}
-	
-	// Recursive calls (8)
-	for (int i = 0; i < 8; i++) {
-		//if (fptrsForChildren[i].size() == 0)
-		//	continue;
-		Vec3f low, high;
-		low[X] = (i & MASK_X) ? dividing_center[X] : lowest[X];
-		high[X] = (i & MASK_X) ? highest[X] : dividing_center[X];
-		low[Y] = (i & MASK_Y) ? dividing_center[Y] : lowest[Y];
-		high[Y] = (i & MASK_Y) ? highest[Y] : dividing_center[Y];
-		low[Z] = (i & MASK_Z) ? dividing_center[Z] : lowest[Z];
-		high[Z] = (i & MASK_Z) ? highest[Z] : dividing_center[Z];
-
-		children[i]->push_faces(fptrsForChildren[i], low, high);
-	}
+Node *Node::getChild(byte idx) const {
+	assert(!isLeaf());
+	return children[idx];
 }
+
+
+
+
 
 /* Helper functions */
 static const Vec3f findLowest(const vector<Face *> &_fptrs) {

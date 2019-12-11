@@ -11,7 +11,7 @@
  * It uses back-propagating rays from eye(camera) to the lights. */
 class RayTracer {
 private:
-	//Octree   *octree;
+	Octree   *octree;
 	Mesh     *meshes;
 	Light    *lights;
 	Camera    camera;

@@ -23,7 +23,27 @@ struct FaceVec3 {
 };
 
 RayTracer::RayTracer(Mesh *_meshes, int _n_meshes, Light *_lights, int _n_lights, const Camera &_camera)
-	: meshes(_meshes), lights(_lights), n_meshes(_n_meshes), n_lights(_n_lights), camera(_camera) {}
+	: meshes(_meshes), lights(_lights), n_meshes(_n_meshes), n_lights(_n_lights), camera(_camera) {
+	Face **allFaces;
+	int n_allFaces = 0;
+	for (int i = 0; i < _n_meshes; i++) {
+		n_allFaces += _meshes[i].get_size();
+	}
+	allFaces = new Face*[n_allFaces];
+
+	int idx = 0;
+	for (int i = 0; i < _n_meshes; i++) {
+		Face *faces = _meshes[i].get_faces();
+		for (int j = 0; j < _meshes[i].get_size(); j++) {
+			allFaces[idx++] = &(faces[j]);
+		}
+	}
+
+	octree = new Octree(allFaces, n_allFaces);
+	octree->showAll();
+
+	delete allFaces;
+}
 
 const bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const {
 	// Search whole space, find candidates
