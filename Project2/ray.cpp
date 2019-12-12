@@ -59,6 +59,7 @@ Ray Ray::reflect(const Face& face, const Vec3f &intersection_pos) const {
 	//create new ray with new origin and new direction.
 	temp = face.normal.dot(this->getDirection());
 	new_direction = this->getDirection() - 2 * temp * face.normal;
+	new_direction.normalize();
 
 	Ray new_ray(intersection_pos, new_direction);
 
@@ -89,10 +90,11 @@ Ray Ray::refract(const Face& face, const Vec3f &intersection_pos) const {
 	//if the opacity of face.material is 1, this material has no tranmitted ray.
 	if (face.material->getopacity() != 1) {
 		float middle = 1 - (n * n) * (1 - NI * NI);
+
 		if (middle < 0)
 			return reflect(face, intersection_pos);
 		new_direction = (n * NI - sqrt(middle)) * face.normal - n * this->getDirection();
-
+		new_direction.normalize();
 		Ray new_ray(intersection_pos, new_direction);
 
 		//update the refraction_index for new_ray

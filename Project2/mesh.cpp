@@ -73,8 +73,10 @@ Mesh::Mesh(const char *filename, const Material &mat, const Mat4f &_model, int d
 	// 4. Face Coordinates (Only triangular faces)
 	for (int i = 0; i < nf; ++i)
 	{
+		assert(!fileio.eof());
 		int idx1, idx2, idx3;
-		fileio >> idx1 >> idx2 >> idx3;
+		fileio >> buf >> idx1 >> idx2 >> idx3;
+		assert(idx1 != idx2 && idx1 != idx3 && idx2 != idx3);
 		faces[i].vertices[0] = vertices + idx1;
 		faces[i].vertices[1] = vertices + idx2;
 		faces[i].vertices[2] = vertices + idx3;
@@ -84,6 +86,8 @@ Mesh::Mesh(const char *filename, const Material &mat, const Mat4f &_model, int d
 
 		faces[i].material = &material;
 	}
+	fileio >> buf >> buf >> buf;
+	assert(fileio.eof());
 
 	cout << "Faces read" << endl;
 

@@ -44,11 +44,11 @@ RayTracer::RayTracer(Mesh *_meshes, int _n_meshes, Light *_lights, int _n_lights
 	delete allFaces;
 }
 
-bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const {
+bool RayTracer::intersect_slow(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const {
 	return octree->getNearestIntersect(ray, ret_face, ret_vec);
 }
 
-bool RayTracer::intersect_slow(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const {
+bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const {
 	// Search whole space, find candidates
 	vector<FaceVec3> candidates;
 	for (int i = 0; i < meshes->get_size(); i++) {
@@ -220,16 +220,13 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 	// parallel test
 	// It does not consider when the ray is INSIDE the face plane
 	float r = n.dot(ray.getDirection());
-	if (abs(r) < FLT_EPSILON) {
-		return false;
-	}
 
 	Vec3f v0 = *face.vertices[0];
 	Vec3f p0 = ray.getOrigin();
 	r = (n.dot(v0 - p0)) / r;
 
 	// direction test
-	if (r < 0.0001) {
+	if (abs(r) < 10 * FLT_EPSILON) {
 		return false;
 	}
 
@@ -244,6 +241,9 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 	float uu = u.dot(u);
 	float uv2_uuvv = uv * uv - uu * vv;
 
+	if (uv2_uuvv == 0.f)
+		return false;
+
 	float s = (uv * wv - vv * wu) / uv2_uuvv;
 	float t = (uv * wu - uu * wv) / uv2_uuvv;
 
@@ -254,6 +254,7 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 
 	// Now we know that the ray intersects with the face
 	ret_vec = v0 + s * u + t * v;
+	assert(ret_vec.distance(ray.getOrigin()) > 10*FLT_EPSILON);
 	return true;
 }
 
