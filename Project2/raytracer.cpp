@@ -40,7 +40,6 @@ RayTracer::RayTracer(Mesh *_meshes, int _n_meshes, Light *_lights, int _n_lights
 	}
 
 	octree = new Octree(allFaces, n_allFaces);
-	octree->showAll();
 
 	delete allFaces;
 }
@@ -100,17 +99,17 @@ const Vec4f RayTracer::cast(const Ray &ray, const Face &prev_face, int depth) co
 			return shadow(ray, prev_face, ray.getOrigin()); // 여기 ray 수정하기
 		}
 		else
-			return { 0,0,0,1 }; // black for non-intersecting primary rays
+			return { 1,0,0,1 }; // black for non-intersecting primary rays
 	}
 
 	// Generating second rays
 	Vec4f colors[] =
 	{
-		cast(ray.reflect(face, pos), face, depth+1),		// reflecting ray
+		//cast(ray.reflect(face, pos), face, depth+1),		// reflecting ray
 		//cast(ray.refract(face, pos), face, depth+1),		// refracting ray
 		shadow(ray, face, pos)					// shadow ray
 	};
-	return setFinalColor(colors, 2);
+	return setFinalColor(colors, 1);
 }
 
 void render_helper(int i, int j, const Camera &cam, const RayTracer &inst) {
@@ -152,11 +151,13 @@ Vec4f RayTracer::shadow(const Ray &incident, const Face& face, const Vec3f &inte
 	Vec3f view = -(incident.getDirection());
 	Vec4f *results = new Vec4f[n_lights];
 	for (int i = 0; i < n_lights; i++) {
-		Ray shad (intersection_pos, lights[i].position);
+		Vec3f shad_dir = lights[i].position - intersection_pos;
+		shad_dir.normalize();
+		Ray shad (intersection_pos, shad_dir);
 		Face destf;	Vec3f destv;
 		if (intersect(shad, destf, destv)
 			&& intersection_pos.distance(destv) < intersection_pos.distance(lights[i].position)) {
-			results[i] = { 0, 0, 0, 1 };
+			results[i] = { 0, 0, 1, 1 };
 			continue;
 		}
 
@@ -169,7 +170,9 @@ Vec4f RayTracer::shadow(const Ray &incident, const Face& face, const Vec3f &inte
 		results[i] = diffuse;
 	}
 
-	return setFinalColor(results, n_lights);
+	Vec4f ret = setFinalColor(results, n_lights);
+	delete results;
+	return ret;
 }
 
 static const Ray find_primary_ray(int h, int w, const Camera &camera) {
@@ -226,7 +229,7 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 	r = (n.dot(v0 - p0)) / r;
 
 	// direction test
-	if (r < 0) {
+	if (r < 0.0001) {
 		return false;
 	}
 
@@ -245,7 +248,7 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 	float t = (uv * wu - uu * wv) / uv2_uuvv;
 
 	// s, t range test
-	if (s < 0 || t < 0 || s + t > 1) {
+	if (s < 0.f || t < 0.f || s + t > 1) {
 		return false;
 	}
 
@@ -257,7 +260,7 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 static Vec3f colorRGBItoRGB(const Vec4f &rgbi) {
 	// verifying
 	for (int i = 0; i < 3; i++)
-		assert(rgbi[i] >= 0 && rgbi[i] <= 1);
+		assert(rgbi[i] >= -0.f && rgbi[i] <= 1.f);
 	assert(rgbi[A] >= 0);
 
 	Vec3f ret ({ rgbi[R] * rgbi[A], rgbi[G] * rgbi[A], rgbi[B] * rgbi[A] });
@@ -273,6 +276,10 @@ static Vec3f colorRGBItoRGB(const Vec4f &rgbi) {
 static Vec4f setFinalColor(const Vec4f *c, int num) {
 	Vec4f color = { 0,0,0,0 };
 	for (int i = 0; i < num; i++) {
+		for (int j = 0; j < 4; j++) {
+			assert(c[i][j] >= -0.f &&
+				c[i][j] <= 1.0f);
+		}
 		color[R] += c[i][R] * c[i][A];
 		color[G] += c[i][G] * c[i][A];
 		color[B] += c[i][B] * c[i][A];
@@ -280,8 +287,9 @@ static Vec4f setFinalColor(const Vec4f *c, int num) {
 	}
 
 	for (int i = 0; i < 4; i++) {
-		color[i] = color[i] / color[A];
+		color[i] = color[A] > FLT_EPSILON ? color[i] / color[A] : 0;
 		color[i] = color[i] > 1. ? 1. : color[i];
+		assert(color[i] >= -0.f && color[i] <= 1.f);
 	}
 	return color;
 }

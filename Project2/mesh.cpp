@@ -2,6 +2,7 @@
 #include "definitions.h"
 
 #include <iostream>
+#include <fstream>
 #include <cstring>
 #include <cassert>
 
@@ -12,21 +13,22 @@ static float INF = 1000;
 static void update_maxmin(const Vec3f &v, Vec3f &max, Vec3f &min);
 static void get_normal(Face &f);
 
-Mesh::Mesh(const char *filename, Material &mat, const Mat4f &_model, int dim) : mesh_dim(dim), material(mat)
+Mesh::Mesh(const char *filename, const Material &mat, const Mat4f &_model, int dim) : mesh_dim(dim), material(mat)
 {
 	FILE *f;
 	char buf[64];
 	int nv, nf;
 
 	// Open file
-	assert(fopen_s(&f, filename, "r") == 0);
+	ifstream fileio(filename, ios::in);
+	assert(fileio.is_open());
 
 	// 1. First line should contain OFF only
-	fscanf_s(f, "%s\n", buf, (unsigned int )(sizeof buf));
+	fileio >> buf;
 	assert(strcmp(buf, "OFF") == 0);
 
-	// 2. Second line should contain total number of v, f, and 0
-	fscanf_s(f, "%d %d 0\n", &nv, &nf);
+	// 2. Second line should contain total number of v, f, and (# of edges)
+	fileio >> nv >> nf >> buf;
 	assert(nv >= 0 && nf >= 0);
 
 	cout << "Mesh file opened" << endl;
@@ -44,7 +46,7 @@ Mesh::Mesh(const char *filename, Material &mat, const Mat4f &_model, int dim) : 
 	// 3-1. Read the positions (w/ finding max/min)
 	for (int i = 0; i < nv; ++i)
 	{
-		fscanf_s(f, "%f %f %f\n", &(vertices[i][X]), &(vertices[i][Y]), &(vertices[i][Z]));
+		fileio >> (vertices[i][X]) >> (vertices[i][Y]) >> (vertices[i][Z]);
 		update_maxmin(vertices[i], v_max, v_min);
 	}
 
@@ -53,7 +55,7 @@ Mesh::Mesh(const char *filename, Material &mat, const Mat4f &_model, int dim) : 
 		(v_max[Y] + v_min[Y]) / 2, (v_max[Z] + v_min[Z]) / 2 };
 	float mulfact;
 	if (v_max[X] - v_min[X] > v_max[Y] - v_min[Y]
-	 && v_max[X] - v_min[X] > v_max[Z] - v_min[Z])
+		&& v_max[X] - v_min[X] > v_max[Z] - v_min[Z])
 		mulfact = dim / (v_max[X] - v_min[X]);
 	else if (v_max[Y] - v_min[Y] > v_max[Z] - v_min[Z])
 		mulfact = dim / (v_max[Y] - v_min[Y]);
@@ -72,7 +74,7 @@ Mesh::Mesh(const char *filename, Material &mat, const Mat4f &_model, int dim) : 
 	for (int i = 0; i < nf; ++i)
 	{
 		int idx1, idx2, idx3;
-		fscanf_s(f, "3 %d %d %d\n", &idx1, &idx2, &idx3);
+		fileio >> idx1 >> idx2 >> idx3;
 		faces[i].vertices[0] = vertices + idx1;
 		faces[i].vertices[1] = vertices + idx2;
 		faces[i].vertices[2] = vertices + idx3;
@@ -80,10 +82,12 @@ Mesh::Mesh(const char *filename, Material &mat, const Mat4f &_model, int dim) : 
 		// get normal
 		get_normal(faces[i]);
 
-		faces[i].material = &mat;
+		faces[i].material = &material;
 	}
 
 	cout << "Faces read" << endl;
+
+	fileio.close();
 }
 
 /* Simple-shape mesh loader */
@@ -91,13 +95,125 @@ Mesh::Mesh(const char *filename, Material &mat, const Mat4f &_model, int dim) : 
 Mesh::Mesh(Shape shape, const Material &mat, const Mat4f &_model, int dim) : mesh_dim(dim), material(mat) {
 	switch (shape) {
 	case TRIANGLE:
+		this->mesh_size = 1;
+
+		vertices = new Vec3f[3];
+		faces = new Face[mesh_size];
+
+		float point1;
+		point1 = sqrt(2) / 2;
+
+		this->vertices[0] = (-0.5, 0, point1);
+		this->vertices[1] = (0.5, 0, point1);
+		this->vertices[2] = (0, 0, -point1);
+
+		for (int i = 0; i < 4; i++) {
+			faces[0].vertices[i] = &vertices[i];
+		}
+		get_normal(faces[0]);
+		faces[0].material = &material;
+
+		break;
 
 	case SQUARE:
+		this->mesh_size = 2;
+
+		vertices = new Vec3f[4];
+		faces = new Face[mesh_size];
+
+		this->vertices[0] = (0.5, 0, 0.5);
+		this->vertices[1] = (-0.5, 0, 0.5);
+		this->vertices[2] = (-0.5, 0, -0.5);
+		this->vertices[3] = (0.5, 0, -0.5);
+
+		faces[0].vertices[0] = &vertices[0];
+		faces[0].vertices[1] = &vertices[2];
+		faces[0].vertices[2] = &vertices[1];
+
+		faces[1].vertices[0] = &vertices[0];
+		faces[1].vertices[1] = &vertices[2];
+		faces[1].vertices[2] = &vertices[3];
+
+		for (int i = 0; i < 2; i++) {
+			get_normal(faces[i]);
+			faces[i].material = &material;
+		}
+
+		break;
 
 	case CUBE:
 
-	case SPHERE:
+		this->mesh_size = 12;
 
+		vertices = new Vec3f[8];
+		faces = new Face[mesh_size];
+
+		this->vertices[0] = (0.5, 0.5, -0.5);
+		this->vertices[1] = (0.5, 0.5, 0.5);
+		this->vertices[2] = (-0.5, 0.5, 0.5);
+		this->vertices[3] = (-0.5, 0.5, -0.5);
+		this->vertices[4] = (0.5, -0.5, -0.5);
+		this->vertices[5] = (0.5, -0.5, 0.5);
+		this->vertices[6] = (-0.5, -0.5, 0.5);
+		this->vertices[7] = (-0.5, -0.5, -0.5);
+
+		faces[0].vertices[0] = &vertices[0];
+		faces[0].vertices[1] = &vertices[1];
+		faces[0].vertices[2] = &vertices[3];
+
+		faces[1].vertices[0] = &vertices[0];
+		faces[1].vertices[1] = &vertices[3];
+		faces[1].vertices[2] = &vertices[4];
+
+		faces[2].vertices[0] = &vertices[0];
+		faces[2].vertices[1] = &vertices[1];
+		faces[2].vertices[2] = &vertices[4];
+
+		faces[3].vertices[0] = &vertices[1];
+		faces[3].vertices[1] = &vertices[2];
+		faces[3].vertices[2] = &vertices[3];
+
+		faces[4].vertices[0] = &vertices[1];
+		faces[4].vertices[1] = &vertices[2];
+		faces[4].vertices[2] = &vertices[6];
+
+		faces[5].vertices[0] = &vertices[2];
+		faces[5].vertices[1] = &vertices[3];
+		faces[5].vertices[2] = &vertices[6];
+
+		faces[6].vertices[0] = &vertices[1];
+		faces[6].vertices[1] = &vertices[4];
+		faces[6].vertices[2] = &vertices[5];
+
+		faces[7].vertices[0] = &vertices[1];
+		faces[7].vertices[1] = &vertices[5];
+		faces[7].vertices[2] = &vertices[6];
+
+		faces[8].vertices[0] = &vertices[4];
+		faces[8].vertices[1] = &vertices[5];
+		faces[8].vertices[2] = &vertices[6];
+
+		faces[9].vertices[0] = &vertices[3];
+		faces[9].vertices[1] = &vertices[4];
+		faces[9].vertices[2] = &vertices[7];
+
+		faces[10].vertices[0] = &vertices[3];
+		faces[10].vertices[1] = &vertices[6];
+		faces[10].vertices[2] = &vertices[7];
+
+		faces[11].vertices[0] = &vertices[4];
+		faces[11].vertices[1] = &vertices[6];
+		faces[11].vertices[2] = &vertices[7];
+
+		for (int i = 0; i < 12; i++) {
+			get_normal(faces[i]);
+			faces[i].material = &material;
+		}
+
+		break;
+
+	case SPHERE:
+		*this = Mesh("sphere.off", mat, _model, dim);
 	default:
 		;
 	}

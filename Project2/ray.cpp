@@ -88,8 +88,9 @@ Ray Ray::refract(const Face& face, const Vec3f &intersection_pos) const {
 
 	//if the opacity of face.material is 1, this material has no tranmitted ray.
 	if (face.material->getopacity() != 1) {
-		// 버그 : sqrt(middle)의 middle이 음수
 		float middle = 1 - (n * n) * (1 - NI * NI);
+		if (middle < 0)
+			return reflect(face, intersection_pos);
 		new_direction = (n * NI - sqrt(middle)) * face.normal - n * this->getDirection();
 
 		Ray new_ray(intersection_pos, new_direction);

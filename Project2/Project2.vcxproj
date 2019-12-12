@@ -142,6 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="bunny.off" />
+    <None Include="sphere.off" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

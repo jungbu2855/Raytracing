@@ -72,5 +72,8 @@
     <None Include="bunny.off">
       <Filter>리소스 파일</Filter>
     </None>
+    <None Include="sphere.off">
+      <Filter>리소스 파일</Filter>
+    </None>
   </ItemGroup>
 </Project>

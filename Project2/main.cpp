@@ -44,12 +44,12 @@ int execute() {
 	models[0].loadIdentity();	// Model transform matrix
 
 	Mesh meshes[NUM_OBJS_TO_BE_RENDERED] = {
-		Mesh("bunny.off", material[0], models[0])
+		Mesh("sphere.off", material[0], models[0])
 	};
 
 	// Configure lights
 	Light lights[] = {
-		Light(0, 10, 0, .5, .5, .9, 1),
+		//Light(0, 10, 0, .5, .5, .9, 1),
 		Light(-10, 0, 10, .3, .9, .5, 1)
 	};
 
@@ -58,7 +58,7 @@ int execute() {
 		0, 0, 2,	// eye
 		0, 0, 0,	// center
 		0, 1, 0,	// up
-		900,			// img height
+		90,		// img height
 		60,			// fovy
 		1.,			// aspect
 		0.5, 10		// zNear, zFar
@@ -67,16 +67,19 @@ int execute() {
 	// Run
 	RayTracer rayTracer(meshes, sizeof meshes / sizeof (Mesh), lights, sizeof lights / sizeof (Light), camera);
 	Vec3f** result = rayTracer.render();
-	uchar4 **converted = new uchar4*[900];
-	for (int i = 0; i < 900; i++) {
-		converted[i] = new uchar4[900];
-		for (int j = 0; j < 900; j++) {
-			converted[i][j].x = result[i][j][R] * 255;
-			converted[i][j].y = result[i][j][G] * 255;
-			converted[i][j].z = result[i][j][B] * 255;
+	
+	int h = camera.height;
+	int w = h * camera.aspect_ratio;
+	uchar4 *converted = new uchar4[h*w];
+	for (int i = 0; i < h; i++) {
+		for (int j = 0; j < w; j++) {
+			converted[h*i+j].x = result[i][j][R] * 255;
+			converted[h*i+j].y = result[i][j][G] * 255;
+			converted[h*i+j].z = result[i][j][B] * 255;
 		}
+
 	}
 
-	SaveBMPFile((uchar4 *)converted, 900, 900, "BUNNY.BMP", "900-900.bmp");
+	SaveBMPFile((uchar4 *)converted, h, w, "BUNNY.BMP", "90-90.bmp");
 	return 0;
 }
