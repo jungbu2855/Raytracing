@@ -331,7 +331,7 @@ static float intersect_face(const Ray &ray, const Face &face) {
 	r = (n.dot(v0 - p0)) / r;
 
 	// direction test
-	if (r < 0) {
+	if (r < 16 * FLT_EPSILON) {
 		return -1;
 	}
 
@@ -346,11 +346,14 @@ static float intersect_face(const Ray &ray, const Face &face) {
 	float uu = u.dot(u);
 	float uv2_uuvv = uv * uv - uu * vv;
 
+	if (uv2_uuvv == 0.f)
+		return -1;
+
 	float s = (uv * wv - vv * wu) / uv2_uuvv;
 	float t = (uv * wu - uu * wv) / uv2_uuvv;
 
 	// s, t range test
-	if (s < 0 || t < 0 || s + t > 1) {
+	if (s < 0.f || t < 0.f || s + t > 1.f) {
 		return -1;
 	}
 

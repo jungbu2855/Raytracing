@@ -44,7 +44,7 @@ int execute() {
 	models[0].loadIdentity();	// Model transform matrix
 
 	Mesh meshes[NUM_OBJS_TO_BE_RENDERED] = {
-		Mesh("sphere.off", material[0], models[0])
+		Mesh("bunny.off", material[0], models[0])
 	};
 
 	// Configure lights
