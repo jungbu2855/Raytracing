@@ -220,8 +220,6 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 	// parallel test
 	// It does not consider when the ray is INSIDE the face plane
 	float r = n.dot(ray.getDirection());
-	if (abs(r) < FLT_EPSILON)
-		return false;
 
 	Vec3f v0 = *face.vertices[0];
 	Vec3f p0 = ray.getOrigin();
