@@ -58,7 +58,7 @@ int execute() {
 		0, 0, 2,	// eye
 		0, 0, 0,	// center
 		0, 1, 0,	// up
-		90,			// img height
+		900,			// img height
 		60,			// fovy
 		1.,			// aspect
 		0.5, 10		// zNear, zFar
@@ -67,15 +67,16 @@ int execute() {
 	// Run
 	RayTracer rayTracer(meshes, sizeof meshes / sizeof (Mesh), lights, sizeof lights / sizeof (Light), camera);
 	Vec3f** result = rayTracer.render();
-	uchar4 converted[90][90];
-	for (int i = 0; i < 90; i++) {
-		for (int j = 0; j < 90; j++) {
+	uchar4 **converted = new uchar4*[900];
+	for (int i = 0; i < 900; i++) {
+		converted[i] = new uchar4[900];
+		for (int j = 0; j < 900; j++) {
 			converted[i][j].x = result[i][j][R] * 255;
 			converted[i][j].y = result[i][j][G] * 255;
 			converted[i][j].z = result[i][j][B] * 255;
 		}
 	}
 
-	SaveBMPFile((uchar4 *)converted, 90, 90, "BUNNY.BMP", "90-90.bmp");
+	SaveBMPFile((uchar4 *)converted, 900, 900, "BUNNY.BMP", "900-900.bmp");
 	return 0;
 }
