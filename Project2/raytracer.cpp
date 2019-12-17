@@ -85,7 +85,7 @@ bool RayTracer::intersect_slow(const Ray &ray, Face &ret_face, Vec3f &ret_vec) c
 }
 
 /* Return value: RGB + light intensity */
-const Vec4f RayTracer::cast(const Ray &ray, const Face &prev_face, int depth) const {
+const Vec4f RayTracer::cast(const Ray &ray, int depth) const {
 	// Early termination
 	if (depth > MAX_RAY_DEPTH || ray.getIntensity() == 0)
 		return { 0,0,0,0 };	// Transparent (no color)
@@ -93,30 +93,49 @@ const Vec4f RayTracer::cast(const Ray &ray, const Face &prev_face, int depth) co
 	Face face;
 	Vec3f pos;
 	if (!intersect(ray, face, pos)) {
-		// Return diffuse color only if it does not have intersections with others
-		if (ray.getCollisions() != 0) {
-			// Shadow ray must be from the non-primary rays
-			return shadow(ray, prev_face, ray.getOrigin()); // 여기 ray 수정하기
-		}
-		else
-			return { 1,0,0,1 }; // black for non-intersecting primary rays
+		return { 0,0,0,1 }; // return black for non-intersecting ray
 	}
 
 	// Generating second rays
-	Vec4f colors[] =
-	{
-		cast(ray.reflect(face, pos), face, depth+1),		// reflecting ray
-		cast(ray.refract(face, pos), face, depth+1),		// refracting ray
-		shadow(ray, face, pos)					// shadow ray
-	};
-	return setFinalColor(colors, 3);
+	if (face.material->getopacity() > 8 * FLT_EPSILON) {
+		if (face.material->getmirror() > 8 * FLT_EPSILON) {
+			Vec4f colors[] =
+			{
+				cast(ray.reflect(face, pos), depth + 1),		// reflecting ray
+				cast(ray.refract(face, pos), depth + 1),		// refracting ray
+				shadow(ray, face, pos)							// shadow ray
+			};
+			return setFinalColor(colors, 3);
+		}
+		else {
+			Vec4f colors[] =
+			{
+				cast(ray.refract(face, pos), depth + 1),		// refracting ray
+				shadow(ray, face, pos)							// shadow ray
+			};
+			return setFinalColor(colors, 2);
+		}
+	}
+	else {
+		if (face.material->getmirror() > 8 * FLT_EPSILON) {
+			Vec4f colors[] =
+			{
+				cast(ray.reflect(face, pos), depth + 1),		// reflecting ray
+				shadow(ray, face, pos)							// shadow ray
+			};
+			return setFinalColor(colors, 2);
+		}
+		else {
+			return shadow(ray, face, pos);
+		}
+	}
 }
 
 void render_helper(int i, int j, const Camera &cam, const RayTracer &inst) {
 	// find primary ray for each pixel
 	Ray primary_ray = find_primary_ray(i, j, cam);
 	// cast the primary ray to space, collecting pixel colors
-	Vec4f rgbi = inst.cast(primary_ray, Face(), 0);
+	Vec4f rgbi = inst.cast(primary_ray, 0);
 	pixels[i][j] = colorRGBItoRGB(rgbi);
 }
 

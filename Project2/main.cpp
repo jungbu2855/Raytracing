@@ -37,8 +37,8 @@ int execute() {
 
 	// Configure lights
 	Light lights[] = {
-		Light(0, 3, 3, 1., 1., 1., 1),
-		Light(-3, 3, 3, 1., 1., 1., 1)
+		Light(0, 6, 1, 1., 1., 1., 1),
+		Light(-3, 6, 1, 1., 1., 1., 1)
 	};
 
 	// Configure camera
