@@ -278,6 +278,8 @@ static Vec3f colorRGBItoRGB(const Vec4f &rgbi) {
  *   (int)num : number of colors			      */
 // 일단 테스트 용으로 제 맘대로 만들었는데 아마 어딘가 바뀌어야할 것 같아요
 static Vec4f setFinalColor(const Vec4f *c, int num) {
+	if (c[0] == Vec4f(0, 0, 0, 1))
+		return { 0,0,0,1 };
 	Vec4f color = { 0,0,0,0 };
 	for (int i = 0; i < num; i++) {
 		for (int j = 0; j < 4; j++) {
@@ -291,7 +293,7 @@ static Vec4f setFinalColor(const Vec4f *c, int num) {
 	}
 
 	for (int i = 0; i < 4; i++) {
-		color[i] = color[A] > 8*FLT_EPSILON ? color[i] / color[A] : 0;
+		color[i] = color[A] > FLT_EPSILON ? color[i] / color[A] : 0;
 		color[i] = color[i] > 1. ? 1. : color[i];
 		assert(color[i] >= -0.f && color[i] <= 1.f);
 	}
