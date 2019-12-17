@@ -642,19 +642,19 @@ public:
 // Transformation functions
 
 template <typename T>
-const Mat4<float> rotate(float rad, const Vec3<T> &axis) {
-	float _cos = cos(rad);
-	float _sin = sin(rad);
+const Mat4<T> rotate(T rad, const Vec3<T> &axis) {
+	T _cos = cos(rad);
+	T _sin = sin(rad);
 	Vec3<T> _axis = axis;
 	_axis.normalize();
 
-	float temp[4][4] = {
+	T temp[4][4] = {
 		{_cos + _axis[0] * _axis[0] * (1 - _cos), _axis[0] * _axis[1] * (1 - _cos) - _axis[2] * _sin, _axis[0] * _axis[2] * (1 - _cos) + _axis[1] * _sin, 0},
 		{_axis[1] * _axis[0] * (1 - _cos) + _axis[2] * _sin, _cos + _axis[1] * _axis[1] * (1 - _cos), _axis[1] * _axis[2] * (1 - _cos) - _axis[0] * _sin, 0},
 		{_axis[2] * _axis[0] * (1 - _cos) - _axis[1] * _sin, _axis[2] * _axis[1] * (1 - _cos) + _axis[0] * _sin, _cos + _axis[2] * _axis[2] * (1 - _cos), 0},
 		{0, 0, 0, 1}
 	};
-	return Mat4<float>(temp);
+	return Mat4<T>(temp);
 }
 
 template <typename T>

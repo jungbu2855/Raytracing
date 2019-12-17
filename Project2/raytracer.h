@@ -27,8 +27,8 @@ public:
 	 *         ret_face - the face that would be returned as intersection face
 	 *		   ret_vec  - the point that would be returned as intersection point
 	 * return value: true if there is any face intersecting                      */
-	bool intersect_slow(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const;
-	bool intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const;
+	bool intersect_slow(const Ray &ray, Face &ret_face, Vec3d &ret_vec) const;
+	bool intersect(const Ray &ray, Face &ret_face, Vec3d &ret_vec) const;
 
 	/* cast() does intersection test with the given ray,
 	 * generating new rays, and determining colors.
@@ -36,16 +36,16 @@ public:
 	 *					 - the last ray casted recursively
 	 *         prev_face - the face that ray origin resides
 	 * return value: RGB color of the ray casted           */
-	const Vec4f cast(const Ray &ray, int depth) const;
+	const Vec4d cast(const Ray &ray, int depth) const;
 
 	/* render() triggers the whole rendering process. It returns pixels. */
-	Vec3f **render() const;
+	Vec3d **render() const;
 
 	/* params:
 	 *   (Ray)incident : incident ray
 	 *   (Face)face : the face
-	 *   (Vec3f)intersection_pos : the intersecting point
+	 *   (Vec3d)intersection_pos : the intersecting point
 	 * return:
 	 *   (Vec4f) Color vector + intensity (RGBI)         */
-	Vec4f shadow(const Ray &incident, const Face& face, const Vec3f &intersection_pos) const;
+	Vec4d shadow(const Ray &incident, const Face& face, const Vec3d &intersection_pos) const;
 };

@@ -4,17 +4,17 @@
 
 class Ray {
 private:
-	Vec3f origin;			// Ray origin
-	Vec3f direction;		// Ray direction vector
-	float intensity;		// Ray intensity, on [0,infinity), default is 1 for light sources, 0 for others
+	Vec3d origin;			// Ray origin
+	Vec3d direction;		// Ray direction vector
+	double intensity;		// Ray intensity, on [0,infinity), default is 1 for light sources, 0 for others
 	int   collisions;		// Number of collisions went through
-	float refraction_index;	// 현재 빛이 지나고 있는 매질의 굴절율
+	double refraction_index;	// 현재 빛이 지나고 있는 매질의 굴절율
 public:
 	// Constructors
 	Ray();
-	Ray(Vec3f _origin, Vec3f _direction);
-	Ray(Vec3f _origin, Vec3f _direction, float _intensity);
-	Ray(Vec3f _origin, Vec3f _direction, float _intensity, int _collisions);
+	Ray(Vec3d _origin, Vec3d _direction);
+	Ray(Vec3d _origin, Vec3d _direction, double _intensity);
+	Ray(Vec3d _origin, Vec3d _direction, double _intensity, int _collisions);
 	Ray(const Ray& _ray);
 
 	// Operators
@@ -24,26 +24,26 @@ public:
 
 	// Getters, Setters
 
-	Vec3f getOrigin() const;
-	Vec3f getDirection() const;
-	float getIntensity() const;
+	Vec3d getOrigin() const;
+	Vec3d getDirection() const;
+	double getIntensity() const;
 	int getCollisions() const;
-	float getRefraction_index() const;
+	double getRefraction_index() const;
 
-	void setOrigin(const Vec3f& _origin);
-	void setDirection(const Vec3f& _direction);
-	void setIntensity(float _intensity);
+	void setOrigin(const Vec3d& _origin);
+	void setDirection(const Vec3d& _direction);
+	void setIntensity(double _intensity);
 	void setCollisions(int _collisions);
-	void setRefraction_index(float _refraction_index);
+	void setRefraction_index(double _refraction_index);
 
 	// Functions
 
 	// Attenuation
-	void attenuate(const Vec3f& to_pos);
+	void attenuate(const Vec3d& to_pos);
 
 	// Generating a refected ray
-	Ray reflect(const Face& face, const Vec3f &intersection_pos) const;
+	Ray reflect(const Face& face, const Vec3d &intersection_pos) const;
 
 	// Generating a refracted ray
-	Ray refract(const Face& face, const Vec3f &intersection_pos) const;
+	Ray refract(const Face& face, const Vec3d &intersection_pos) const;
 };

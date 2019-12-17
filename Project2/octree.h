@@ -20,9 +20,9 @@ public:
 	class OctreeNode {
 	private:
 		vector<Face *> faceptrs;	// faces are passed by pointers for mem eff
-		Vec3f lowest;				// lowX lowY lowZ coord
-		Vec3f highest;				// highX highY highZ coord
-		Vec3f dividing_center;		// child-dividing center
+		Vec3d lowest;				// lowX lowY lowZ coord
+		Vec3d highest;				// highX highY highZ coord
+		Vec3d dividing_center;		// child-dividing center
 		OctreeNode *parent;			// parent pointer
 		OctreeNode **children;		// 8 dynamic child pointers
 		byte index;					// of which side it resides in its parent
@@ -40,7 +40,7 @@ public:
 		int getSize() const;						// get number of faces
 		OctreeNode *getChild(byte idx) const;		// get a child
 		bool nearestIntersect(const Ray &ray,		// nearest intersection for the ray
-			Face &ret_face, float &ret_r) const;
+			Face &ret_face, double &ret_r) const;
 		bool penetratedBy(const Ray &ray) const;	// does the ray pass through?
 	};
 private:
@@ -52,5 +52,5 @@ public:
 
 	// Traverse
 	void showAll(OctreeNode *ptr = nullptr) const;
-	bool getNearestIntersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const;
+	bool getNearestIntersect(const Ray &ray, Face &ret_face, Vec3d &ret_vec) const;
 };

@@ -14,15 +14,15 @@ public:
 		SPHERE
 	};
 private:
-	Vec3f *vertices;	// All vertices it contains
+	Vec3d *vertices;	// All vertices it contains
 	Face *faces;		// (coords, normals, *material prop)
 	int mesh_size;		// number of faces in the mesh
-	float mesh_dim;		// Maximum length among x, y, z direction dimensions.
+	double mesh_dim;		// Maximum length among x, y, z direction dimensions.
 	Material material;	// Material property
 public:
 	// Constructor: Mesh file read & loader. It does everything needed.
-	Mesh(const char *filename, const Material &mat, const Mat4f &_model, float dim = 1);
-	Mesh(Shape shape, const Material &mat, const Mat4f &_model, float dim = 1);
+	Mesh(const char *filename, const Material &mat, const Mat4d &_model, double dim = 1);
+	Mesh(Shape shape, const Material &mat, const Mat4d &_model, double dim = 1);
 	~Mesh();
 
 	// Getters
@@ -33,5 +33,5 @@ public:
 	Face *get_faces() { return faces; }
 
 private:
-	void offFileLoader(const char *filename, const Mat4f &_model);
+	void offFileLoader(const char *filename, const Mat4d &_model);
 };

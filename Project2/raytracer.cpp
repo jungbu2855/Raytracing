@@ -8,18 +8,18 @@
 #include <thread>
 
 static const Ray find_primary_ray(int h, int w, const Camera &camera);
-static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec);
-static Vec3f colorRGBItoRGB(const Vec4f &rgbi);
-static Vec4f setFinalColor(const Vec4f *c, int num);
+static bool intersect_face(const Ray &ray, const Face &face, Vec3d &ret_vec);
+static Vec3d colorRGBItoRGB(const Vec4d &rgbi);
+static Vec4d setFinalColor(const Vec4d *c, int num);
 
-static Vec3f **pixels;
+static Vec3d **pixels;
 static thread *threads;
 
 constexpr int MAX_RAY_DEPTH = 5;
 
 struct FaceVec3 {
 	Face  f;
-	Vec3f v;
+	Vec3d v;
 };
 
 RayTracer::RayTracer(Mesh *_meshes, int _n_meshes, Light *_lights, int _n_lights, const Camera &_camera)
@@ -44,16 +44,16 @@ RayTracer::RayTracer(Mesh *_meshes, int _n_meshes, Light *_lights, int _n_lights
 	delete allFaces;
 }
 
-bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const {
+bool RayTracer::intersect(const Ray &ray, Face &ret_face, Vec3d &ret_vec) const {
 	return octree->getNearestIntersect(ray, ret_face, ret_vec);
 }
 
-bool RayTracer::intersect_slow(const Ray &ray, Face &ret_face, Vec3f &ret_vec) const {
+bool RayTracer::intersect_slow(const Ray &ray, Face &ret_face, Vec3d &ret_vec) const {
 	// Search whole space, find candidates
 	vector<FaceVec3> candidates;
 	for (int i = 0; i < meshes->get_size(); i++) {
 		Face face = (meshes->get_faces())[i];
-		Vec3f cand_vec;
+		Vec3d cand_vec;
 		// face-wise searching helper function
 		bool is_intersect = intersect_face(ray, face, cand_vec);
 		if (is_intersect) {
@@ -67,12 +67,12 @@ bool RayTracer::intersect_slow(const Ray &ray, Face &ret_face, Vec3f &ret_vec) c
 		return false;
 
 	// find some candidates: get the nearest candidate
-	float mind = 1000000;
+	double mind = 1000000;
 	FaceVec3 nearest;
 	for (int i = 0; i < candidates.size(); i++) {
 		FaceVec3 candidate = candidates[i];
-		Vec3f v_o = candidate.v - ray.getOrigin();
-		float dist2 = v_o.dot(v_o);
+		Vec3d v_o = candidate.v - ray.getOrigin();
+		double dist2 = v_o.dot(v_o);
 		if (dist2 < mind) {
 			mind = dist2;
 			nearest = candidate;
@@ -85,13 +85,13 @@ bool RayTracer::intersect_slow(const Ray &ray, Face &ret_face, Vec3f &ret_vec) c
 }
 
 /* Return value: RGB + light intensity */
-const Vec4f RayTracer::cast(const Ray &ray, int depth) const {
+const Vec4d RayTracer::cast(const Ray &ray, int depth) const {
 	// Early termination
 	if (depth > MAX_RAY_DEPTH || ray.getIntensity() == 0)
 		return { 0,0,0,0 };	// Transparent (no color)
 	// Get nearest intersection
 	Face face;
-	Vec3f pos;
+	Vec3d pos;
 	if (!intersect(ray, face, pos)) {
 		return { 0,0,0,1 }; // return black for non-intersecting ray
 	}
@@ -99,7 +99,7 @@ const Vec4f RayTracer::cast(const Ray &ray, int depth) const {
 	// Generating second rays
 	if (face.material->getopacity() > 8 * FLT_EPSILON) {
 		if (face.material->getmirror() > 8 * FLT_EPSILON) {
-			Vec4f colors[] =
+			Vec4d colors[] =
 			{
 				cast(ray.reflect(face, pos), depth + 1),		// reflecting ray
 				cast(ray.refract(face, pos), depth + 1),		// refracting ray
@@ -108,7 +108,7 @@ const Vec4f RayTracer::cast(const Ray &ray, int depth) const {
 			return setFinalColor(colors, 3);
 		}
 		else {
-			Vec4f colors[] =
+			Vec4d colors[] =
 			{
 				cast(ray.refract(face, pos), depth + 1),		// refracting ray
 				shadow(ray, face, pos)							// shadow ray
@@ -118,7 +118,7 @@ const Vec4f RayTracer::cast(const Ray &ray, int depth) const {
 	}
 	else {
 		if (face.material->getmirror() > 8 * FLT_EPSILON) {
-			Vec4f colors[] =
+			Vec4d colors[] =
 			{
 				cast(ray.reflect(face, pos), depth + 1),		// reflecting ray
 				shadow(ray, face, pos)							// shadow ray
@@ -135,17 +135,17 @@ void render_helper(int i, int j, const Camera &cam, const RayTracer &inst) {
 	// find primary ray for each pixel
 	Ray primary_ray = find_primary_ray(i, j, cam);
 	// cast the primary ray to space, collecting pixel colors
-	Vec4f rgbi = inst.cast(primary_ray, 0);
+	Vec4d rgbi = inst.cast(primary_ray, 0);
 	pixels[i][j] = colorRGBItoRGB(rgbi);
 }
 
-Vec3f ** RayTracer::render() const {
+Vec3d ** RayTracer::render() const {
 	// init local vars
 	int height = camera.height;
 	int width = camera.height * camera.aspect_ratio;
-	pixels = new Vec3f*[height];	// RGB pixel container
+	pixels = new Vec3d*[height];	// RGB pixel container
 	for (int i = 0; i < height; i++)
-		pixels[i] = new Vec3f[width];
+		pixels[i] = new Vec3d[width];
 
 	threads = new thread[width];
 	
@@ -167,15 +167,15 @@ Vec3f ** RayTracer::render() const {
 	return pixels;
 }
 
-Vec4f RayTracer::shadow(const Ray &incident, const Face& face, const Vec3f &intersection_pos) const {
-	Vec3f view = -(incident.getDirection());
+Vec4d RayTracer::shadow(const Ray &incident, const Face& face, const Vec3d &intersection_pos) const {
+	Vec3d view = -(incident.getDirection());
 	view.normalize();
-	Vec4f *results = new Vec4f[n_lights];
+	Vec4d *results = new Vec4d[n_lights];
 	for (int i = 0; i < n_lights; i++) {
-		Vec3f shad_dir = lights[i].position - intersection_pos;
+		Vec3d shad_dir = lights[i].position - intersection_pos;
 		shad_dir.normalize();
 		Ray shad (intersection_pos, shad_dir, 1.0f);
-		Face destf;	Vec3f destv;
+		Face destf;	Vec3d destv;
 		if (intersect(shad, destf, destv)
 			&& intersection_pos.distance(destv) < intersection_pos.distance(lights[i].position)) {
 			results[i] = { 0, 0, 0, 1 };
@@ -183,18 +183,18 @@ Vec4f RayTracer::shadow(const Ray &incident, const Face& face, const Vec3f &inte
 		}
 
 		shad.attenuate(lights[i].position);
-		float att = shad.getIntensity();
-		Vec3f refl_dir = intersection_pos - lights[i].position;
+		double att = shad.getIntensity();
+		Vec3d refl_dir = intersection_pos - lights[i].position;
 		refl_dir.normalize();
 		Ray refl = Ray(lights[i].position, refl_dir).reflect(face, intersection_pos);
 
-		Vec4f diffuse, specular;
+		Vec4d diffuse, specular;
 		diffuse = (lights[i].color * lights[i].color[A] *
 			face.material->getcolor() * face.material->getopacity()) *
 			fmax(shad_dir.dot(face.normal), 0);
 		diffuse[3] = 1;
 
-		float shininess = face.material->getmirror() < 0.95 ?
+		double shininess = face.material->getmirror() < 0.95 ?
 			1 / (1 - face.material->getmirror()) * 10:
 			200.;
 		specular = (lights[i].color * lights[i].color[A]) *
@@ -206,31 +206,31 @@ Vec4f RayTracer::shadow(const Ray &incident, const Face& face, const Vec3f &inte
 		results[i][A] = att;
 	}
 
-	Vec4f ret = setFinalColor(results, n_lights);
+	Vec4d ret = setFinalColor(results, n_lights);
 	delete results;
 	return ret;
 }
 
 static const Ray find_primary_ray(int h, int w, const Camera &camera) {
 	// init vars
-	Vec3f origin = camera.position;
-	float h_max = camera.zNear * tan(camera.fovy / 2);
-	float w_max = h_max * camera.aspect_ratio;
+	Vec3d origin = camera.position;
+	double h_max = camera.zNear * tan(camera.fovy / 2);
+	double w_max = h_max * camera.aspect_ratio;
 
 	// Initialize primary ray to eye(0,0,0), center(0,0,-1), up(0,1,0)
 	// Perspective view
-	float y = (2 * (float)h / camera.height - 1) * h_max;
-	float x = (2 * (float)w / (camera.height * camera.aspect_ratio) - 1) * w_max;
-	Vec3f ray_dir = { x,y,-1 };
+	double y = (2 * (double)h / camera.height - 1) * h_max;
+	double x = (2 * (double)w / (camera.height * camera.aspect_ratio) - 1) * w_max;
+	Vec3d ray_dir = { x,y,-1 };
 
 	// View transformation
-	Mat4f view;
+	Mat4d view;
 
-	Vec3f forward = - camera.center + camera.position;
+	Vec3d forward = - camera.center + camera.position;
 	forward.normalize();
-	Vec3f left = camera.up.cross(forward);
+	Vec3d left = camera.up.cross(forward);
 	left.normalize();
-	Vec3f up = forward.cross(left);
+	Vec3d up = forward.cross(left);
 	up.normalize();
 	view.setMat_ij(left[X], 0, 0);
 	view.setMat_ij(left[Y], 1, 0);
@@ -247,21 +247,21 @@ static const Ray find_primary_ray(int h, int w, const Camera &camera) {
 	view.setMat_ij(camera.position[Z], 2, 3);
 	view.setMat_ij(1, 3, 3);
 
-	ray_dir = Mat3f(view) * ray_dir;
+	ray_dir = Mat3d(view) * ray_dir;
 	return Ray(origin, ray_dir, 1);
 }
 
-static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
-	Vec3f n = face.normal;
+static bool intersect_face(const Ray &ray, const Face &face, Vec3d &ret_vec) {
+	Vec3d n = face.normal;
 
 	// parallel test
 	// It does not consider when the ray is INSIDE the face plane
-	float r = n.dot(ray.getDirection());
+	double r = n.dot(ray.getDirection());
 	if (abs(r) < 2 * FLT_EPSILON)
 		return false;
 
-	Vec3f v0 = *face.vertices[0];
-	Vec3f p0 = ray.getOrigin();
+	Vec3d v0 = *face.vertices[0];
+	Vec3d p0 = ray.getOrigin();
 	r = (n.dot(v0 - p0)) / r;
 
 	// direction test
@@ -269,22 +269,22 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 		return false;
 	}
 
-	Vec3f p_i = p0 + r * ray.getDirection();
+	Vec3d p_i = p0 + r * ray.getDirection();
 
-	Vec3f u = *face.vertices[1] - *face.vertices[0];
-	Vec3f v = *face.vertices[2] - *face.vertices[0];
-	Vec3f w = p_i - v0;
+	Vec3d u = *face.vertices[1] - *face.vertices[0];
+	Vec3d v = *face.vertices[2] - *face.vertices[0];
+	Vec3d w = p_i - v0;
 
-	float uv = u.dot(v);	float wv = w.dot(v);
-	float vv = v.dot(v);	float wu = w.dot(u);
-	float uu = u.dot(u);
-	float uv2_uuvv = uv * uv - uu * vv;
+	double uv = u.dot(v);	double wv = w.dot(v);
+	double vv = v.dot(v);	double wu = w.dot(u);
+	double uu = u.dot(u);
+	double uv2_uuvv = uv * uv - uu * vv;
 
 	if (uv2_uuvv == 0.f)
 		return false;
 
-	float s = (uv * wv - vv * wu) / uv2_uuvv;
-	float t = (uv * wu - uu * wv) / uv2_uuvv;
+	double s = (uv * wv - vv * wu) / uv2_uuvv;
+	double t = (uv * wu - uu * wv) / uv2_uuvv;
 
 	// s, t range test
 	if (s < -0.f || t < -0.f || s + t > 1) {
@@ -297,23 +297,23 @@ static bool intersect_face(const Ray &ray, const Face &face, Vec3f &ret_vec) {
 	return true;
 }
 
-static Vec3f colorRGBItoRGB(const Vec4f &rgbi) {
+static Vec3d colorRGBItoRGB(const Vec4d &rgbi) {
 	// verifying
 	for (int i = 0; i < 3; i++)
 		assert(rgbi[i] >= -0.f && rgbi[i] <= 1.f);
 	assert(rgbi[A] >= 0);
 
-	Vec3f ret ({ rgbi[R] * rgbi[A], rgbi[G] * rgbi[A], rgbi[B] * rgbi[A] });
+	Vec3d ret ({ rgbi[R] * rgbi[A], rgbi[G] * rgbi[A], rgbi[B] * rgbi[A] });
 	for (int i = 0; i < 3; i++) 
 		ret[i] = ret[i] > 1 ? 1 : ret[i];
 	return ret;
 }
 
 /* param:
- *   (Vec4f *)c : collection of {RGB, intensity}s
+ *   (Vec4d *)c : collection of {RGB, intensity}s
  *   (int)num : number of colors			      */
-static Vec4f setFinalColor(const Vec4f *c, int num) {
-	Vec4f color = { 0,0,0,0 };
+static Vec4d setFinalColor(const Vec4d *c, int num) {
+	Vec4d color = { 0,0,0,0 };
 	for (int i = 0; i < num; i++) {
 		for (int j = 0; j < 4; j++) {
 			assert(c[i][j] >= -0.f &&

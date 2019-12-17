@@ -8,36 +8,36 @@
 
 using namespace std;
 
-static float INF = 1000;
+static double INF = 1000;
 
-static void update_maxmin(const Vec3f &v, Vec3f &max, Vec3f &min);
+static void update_maxmin(const Vec3d &v, Vec3d &max, Vec3d &min);
 static void get_normal(Face &f);
 
-Mesh::Mesh(const char *filename, const Material &mat, const Mat4f &_model, float dim)
+Mesh::Mesh(const char *filename, const Material &mat, const Mat4d &_model, double dim)
 	: mesh_dim(dim), material(mat) {
 	offFileLoader(filename, _model);
 }
 
 /* Simple-shape mesh loader */
 /* 웬만하면 유저가 model matrix로 직관적으로 조작할 수 있도록 가로*세로*깊이 모두 1로 맞춰주시고 0,0,0을 중심점으로, z축에 평행하거나 z축 위에 있도록 만들어주세요. */
-Mesh::Mesh(Shape shape, const Material &mat, const Mat4f &_model, float dim)
+Mesh::Mesh(Shape shape, const Material &mat, const Mat4d &_model, double dim)
 	: mesh_dim(dim), material(mat) {
 	// Model transformation matrix
-	Mat4f model = _model * scale(dim);
+	Mat4d model = _model * scale(dim);
 
 	switch (shape) {
 	case TRIANGLE:
 		this->mesh_size = 1;
 
-		vertices = new Vec3f[3];
+		vertices = new Vec3d[3];
 		faces = new Face[mesh_size];
 
-		float point1;
+		double point1;
 		point1 = sqrt(2) / 2;
 
-		this->vertices[0] = Vec3f(-0.5, 0, point1);
-		this->vertices[1] = Vec3f(0.5, 0, point1);
-		this->vertices[2] = Vec3f(0, 0, -point1);
+		this->vertices[0] = Vec3d(-0.5, 0, point1);
+		this->vertices[1] = Vec3d(0.5, 0, point1);
+		this->vertices[2] = Vec3d(0, 0, -point1);
 
 		for (int i = 0; i < 3; i++)
 			vertices[i] = model * vertices[i];
@@ -53,13 +53,13 @@ Mesh::Mesh(Shape shape, const Material &mat, const Mat4f &_model, float dim)
 	case SQUARE:
 		this->mesh_size = 2;
 
-		vertices = new Vec3f[4];
+		vertices = new Vec3d[4];
 		faces = new Face[mesh_size];
 
-		this->vertices[0] = Vec3f(0.5, 0, 0.5);
-		this->vertices[1] = Vec3f(-0.5, 0, 0.5);
-		this->vertices[2] = Vec3f(-0.5, 0, -0.5);
-		this->vertices[3] = Vec3f(0.5, 0, -0.5);
+		this->vertices[0] = Vec3d(0.5, 0, 0.5);
+		this->vertices[1] = Vec3d(-0.5, 0, 0.5);
+		this->vertices[2] = Vec3d(-0.5, 0, -0.5);
+		this->vertices[3] = Vec3d(0.5, 0, -0.5);
 
 		for (int i = 0; i < 4; i++)
 			vertices[i] = model * vertices[i];
@@ -83,17 +83,17 @@ Mesh::Mesh(Shape shape, const Material &mat, const Mat4f &_model, float dim)
 
 		this->mesh_size = 12;
 
-		vertices = new Vec3f[8];
+		vertices = new Vec3d[8];
 		faces = new Face[mesh_size];
 
-		this->vertices[0] = Vec3f(0.5, 0.5, -0.5);
-		this->vertices[1] = Vec3f(0.5, 0.5, 0.5);
-		this->vertices[2] = Vec3f(-0.5, 0.5, 0.5);
-		this->vertices[3] = Vec3f(-0.5, 0.5, -0.5);
-		this->vertices[4] = Vec3f(0.5, -0.5, -0.5);
-		this->vertices[5] = Vec3f(0.5, -0.5, 0.5);
-		this->vertices[6] = Vec3f(-0.5, -0.5, 0.5);
-		this->vertices[7] = Vec3f(-0.5, -0.5, -0.5);
+		this->vertices[0] = Vec3d(0.5, 0.5, -0.5);
+		this->vertices[1] = Vec3d(0.5, 0.5, 0.5);
+		this->vertices[2] = Vec3d(-0.5, 0.5, 0.5);
+		this->vertices[3] = Vec3d(-0.5, 0.5, -0.5);
+		this->vertices[4] = Vec3d(0.5, -0.5, -0.5);
+		this->vertices[5] = Vec3d(0.5, -0.5, 0.5);
+		this->vertices[6] = Vec3d(-0.5, -0.5, 0.5);
+		this->vertices[7] = Vec3d(-0.5, -0.5, -0.5);
 
 		for (int i = 0; i < 8; i++)
 			vertices[i] = model * vertices[i];
@@ -166,7 +166,7 @@ Mesh::~Mesh() {
 	delete faces;
 }
 
-static void update_maxmin(const Vec3f &v, Vec3f &max, Vec3f &min)
+static void update_maxmin(const Vec3d &v, Vec3d &max, Vec3d &min)
 {
 	if (v[X] > max[X])
 		max[X] = v[X];
@@ -184,14 +184,14 @@ static void update_maxmin(const Vec3f &v, Vec3f &max, Vec3f &min)
 
 static void get_normal(Face &f)
 {
-	Vec3f vec12 = *f.vertices[1] - *f.vertices[0];
-	Vec3f vec13 = *f.vertices[2] - *f.vertices[0];
+	Vec3d vec12 = *f.vertices[1] - *f.vertices[0];
+	Vec3d vec13 = *f.vertices[2] - *f.vertices[0];
 
 	f.normal = vec12.cross(vec13);
 	f.normal.normalize();
 }
 
-void Mesh::offFileLoader(const char *filename, const Mat4f &_model) {
+void Mesh::offFileLoader(const char *filename, const Mat4d &_model) {
 	FILE *f;
 	char buf[64];
 	int nv, nf;
@@ -211,14 +211,14 @@ void Mesh::offFileLoader(const char *filename, const Mat4f &_model) {
 	cout << "Mesh file opened" << endl;
 
 	// 2+. Try to allocate mem space
-	vertices = new Vec3f[nv];
+	vertices = new Vec3d[nv];
 	faces = new Face[nf];
 	assert(vertices != 0 && faces != 0);
 	mesh_size = nf;
 
 	// 3. Vertex Coordinates
-	Vec3f v_max = { -INF, -INF, -INF };
-	Vec3f v_min = { INF, INF, INF };
+	Vec3d v_max = { -INF, -INF, -INF };
+	Vec3d v_min = { INF, INF, INF };
 
 	// 3-1. Read the positions (w/ finding max/min)
 	for (int i = 0; i < nv; ++i)
@@ -228,9 +228,9 @@ void Mesh::offFileLoader(const char *filename, const Mat4f &_model) {
 	}
 
 	// 3-2. Tune the vertices to be centered, properly sized
-	Vec3f center = { (v_max[X] + v_min[X]) / 2,
+	Vec3d center = { (v_max[X] + v_min[X]) / 2,
 		(v_max[Y] + v_min[Y]) / 2, (v_max[Z] + v_min[Z]) / 2 };
-	float mulfact;
+	double mulfact;
 	if (v_max[X] - v_min[X] > v_max[Y] - v_min[Y]
 		&& v_max[X] - v_min[X] > v_max[Z] - v_min[Z])
 		mulfact = mesh_dim / (v_max[X] - v_min[X]);
@@ -239,7 +239,7 @@ void Mesh::offFileLoader(const char *filename, const Mat4f &_model) {
 	else
 		mulfact = mesh_dim / (v_max[Z] - v_min[Z]);
 
-	Mat4f model = _model * scale(mulfact) * translate(-center);
+	Mat4d model = _model * scale(mulfact) * translate(-center);
 	for (int i = 0; i < nv; ++i)
 	{
 		vertices[i] = model * vertices[i];

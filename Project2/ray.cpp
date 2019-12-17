@@ -3,10 +3,10 @@
 #include "definitions.h"
 
 // Constructors
-Ray::Ray() : origin(Vec3f()), direction(Vec3f()), intensity(0), collisions(0), refraction_index(1) {}
-Ray::Ray(Vec3f _origin, Vec3f _direction) : origin(Vec3f(_origin)), direction(_direction), intensity(0), collisions(0), refraction_index(1) {}
-Ray::Ray(Vec3f _origin, Vec3f _direction, float _intensity) : origin(Vec3f(_origin)), direction(_direction), intensity(_intensity), collisions(0), refraction_index(1) {}
-Ray::Ray(Vec3f _origin, Vec3f _direction, float _intensity, int _collisions) : origin(Vec3f(_origin)), direction(_direction), intensity(_intensity), collisions(_collisions), refraction_index(1) {}
+Ray::Ray() : origin(Vec3d()), direction(Vec3d()), intensity(0), collisions(0), refraction_index(1) {}
+Ray::Ray(Vec3d _origin, Vec3d _direction) : origin(Vec3d(_origin)), direction(_direction), intensity(0), collisions(0), refraction_index(1) {}
+Ray::Ray(Vec3d _origin, Vec3d _direction, double _intensity) : origin(Vec3d(_origin)), direction(_direction), intensity(_intensity), collisions(0), refraction_index(1) {}
+Ray::Ray(Vec3d _origin, Vec3d _direction, double _intensity, int _collisions) : origin(Vec3d(_origin)), direction(_direction), intensity(_intensity), collisions(_collisions), refraction_index(1) {}
 Ray::Ray(const Ray& _ray) {
 	this->origin = _ray.origin;
 	this->direction = _ray.direction;
@@ -29,32 +29,32 @@ Ray& Ray::operator= (const Ray& _ray) {
 
 // Getters, Setters
 
-Vec3f Ray::getOrigin() const { return origin; }
-Vec3f Ray::getDirection() const { return direction; }
-float Ray::getIntensity() const { return intensity; }
+Vec3d Ray::getOrigin() const { return origin; }
+Vec3d Ray::getDirection() const { return direction; }
+double Ray::getIntensity() const { return intensity; }
 int Ray::getCollisions() const { return collisions; }
-float Ray::getRefraction_index() const { return refraction_index; }
+double Ray::getRefraction_index() const { return refraction_index; }
 
-void Ray::setOrigin(const Vec3f& _origin) { origin = _origin; }
-void Ray::setDirection(const Vec3f& _direction) { direction = _direction; }
-void Ray::setIntensity(float _intensity) { intensity = _intensity; }
+void Ray::setOrigin(const Vec3d& _origin) { origin = _origin; }
+void Ray::setDirection(const Vec3d& _direction) { direction = _direction; }
+void Ray::setIntensity(double _intensity) { intensity = _intensity; }
 void Ray::setCollisions(int _collisions) { collisions = _collisions; }
-void Ray::setRefraction_index(float _refraction_index) { refraction_index = _refraction_index; }
+void Ray::setRefraction_index(double _refraction_index) { refraction_index = _refraction_index; }
 
 // Functions
 
-void Ray::attenuate(const Vec3f& to_pos) {
-	float distance = this->getOrigin().distance(to_pos);
+void Ray::attenuate(const Vec3d& to_pos) {
+	double distance = this->getOrigin().distance(to_pos);
 
-	float temp = this->getIntensity();
+	double temp = this->getIntensity();
 	temp /= 1.0 + 0.005 * pow(distance, 2) + 0.005 * distance;
 
 	this->setIntensity(temp);
 }
 
-Ray Ray::reflect(const Face& face, const Vec3f &intersection_pos) const {
-	Vec3f new_direction;
-	float temp;
+Ray Ray::reflect(const Face& face, const Vec3d &intersection_pos) const {
+	Vec3d new_direction;
+	double temp;
 
 	//create new ray with new origin and new direction.
 	temp = face.normal.dot(this->getDirection());
@@ -76,9 +76,9 @@ Ray Ray::reflect(const Face& face, const Vec3f &intersection_pos) const {
 	return new_ray;
 }
 
-Ray Ray::refract(const Face& face, const Vec3f &intersection_pos) const {
-	Vec3f new_direction;
-	float NI, n, refindex_prev, refindex_next;
+Ray Ray::refract(const Face& face, const Vec3d &intersection_pos) const {
+	Vec3d new_direction;
+	double NI, n, refindex_prev, refindex_next;
 	NI = this->getDirection().dot(face.normal);
 
 	//calculate the relative refraction index
@@ -89,7 +89,7 @@ Ray Ray::refract(const Face& face, const Vec3f &intersection_pos) const {
 
 	//if the opacity of face.material is 1, this material has no tranmitted ray.
 	if (face.material->getopacity() != 1) {
-		float middle = 1 - (n * n) * (1 - NI * NI);
+		double middle = 1 - (n * n) * (1 - NI * NI);
 
 		if (middle < 0)
 			return reflect(face, intersection_pos);
