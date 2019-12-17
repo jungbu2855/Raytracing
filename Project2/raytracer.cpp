@@ -154,6 +154,7 @@ Vec3f ** RayTracer::render() const {
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {
 			threads[j] = thread(render_helper, i, j, camera, *this);
+			//render_helper(i, j, camera, *this);
 		}
 		for (int j = 0; j < width; j++) {
 			threads[j].join();
@@ -168,11 +169,12 @@ Vec3f ** RayTracer::render() const {
 
 Vec4f RayTracer::shadow(const Ray &incident, const Face& face, const Vec3f &intersection_pos) const {
 	Vec3f view = -(incident.getDirection());
+	view.normalize();
 	Vec4f *results = new Vec4f[n_lights];
 	for (int i = 0; i < n_lights; i++) {
 		Vec3f shad_dir = lights[i].position - intersection_pos;
 		shad_dir.normalize();
-		Ray shad (intersection_pos, shad_dir);
+		Ray shad (intersection_pos, shad_dir, 1.0f);
 		Face destf;	Vec3f destv;
 		if (intersect(shad, destf, destv)
 			&& intersection_pos.distance(destv) < intersection_pos.distance(lights[i].position)) {
@@ -180,7 +182,12 @@ Vec4f RayTracer::shadow(const Ray &incident, const Face& face, const Vec3f &inte
 			continue;
 		}
 
-		Ray refl = incident.reflect(face, intersection_pos);
+		shad.attenuate(lights[i].position);
+		float att = shad.getIntensity();
+		Vec3f refl_dir = intersection_pos - lights[i].position;
+		refl_dir.normalize();
+		Ray refl = Ray(lights[i].position, refl_dir).reflect(face, intersection_pos);
+
 		Vec4f diffuse, specular;
 		diffuse = (lights[i].color * lights[i].color[A] *
 			face.material->getcolor() * face.material->getopacity()) *
@@ -194,8 +201,9 @@ Vec4f RayTracer::shadow(const Ray &incident, const Face& face, const Vec3f &inte
 			pow(fmax(view.dot(refl.getDirection()), 0), shininess);
 		specular[3] = 1;
 		results[i] = diffuse + specular;
-		for (int j = 0; j < 4; j++)
+		for (int j = 0; j < 3; j++)
 			results[i][j] = results[i][j] > 1.f ? 1.f : results[i][j];
+		results[i][A] = att;
 	}
 
 	Vec4f ret = setFinalColor(results, n_lights);
@@ -303,7 +311,6 @@ static Vec3f colorRGBItoRGB(const Vec4f &rgbi) {
 /* param:
  *   (Vec4f *)c : collection of {RGB, intensity}s
  *   (int)num : number of colors			      */
-// 일단 테스트 용으로 제 맘대로 만들었는데 아마 어딘가 바뀌어야할 것 같아요
 static Vec4f setFinalColor(const Vec4f *c, int num) {
 	Vec4f color = { 0,0,0,0 };
 	for (int i = 0; i < num; i++) {

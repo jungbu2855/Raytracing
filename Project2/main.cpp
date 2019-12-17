@@ -37,8 +37,8 @@ int execute() {
 
 	// Configure lights
 	Light lights[] = {
-		Light(0, 6, 1, 1., 1., 1., 1),
-		Light(-3, 6, 1, 1., 1., 1., 1)
+		Light(1, 6, 6, 1., 1., 1., 1),
+		Light(-1, 6, 6, 1., 1., 1., 1)
 	};
 
 	// Configure camera
@@ -46,7 +46,7 @@ int execute() {
 		0, 0, 5,	// eye
 		0, 0, 0,	// center
 		0, 1, 0,	// up
-		90, 		// img height
+		360, 		// img height
 		60,			// fovy
 		1.,			// aspect
 		0.5, 10		// zNear, zFar
@@ -68,6 +68,6 @@ int execute() {
 
 	}
 
-	SaveBMPFile((uchar4 *)converted, h, w, "BUNNY1.BMP", "90-90.bmp");
+	SaveBMPFile((uchar4 *)converted, h, w, "BUNNY1.BMP", "360-360.bmp");
 	return 0;
 }

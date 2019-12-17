@@ -47,7 +47,7 @@ void Ray::attenuate(const Vec3f& to_pos) {
 	float distance = this->getOrigin().distance(to_pos);
 
 	float temp = this->getIntensity();
-	temp /= pow(distance, 2);
+	temp /= 1.0 + 0.005 * pow(distance, 2) + 0.005 * distance;
 
 	this->setIntensity(temp);
 }
