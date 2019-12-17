@@ -137,6 +137,7 @@
     <ClInclude Include="raytracer.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="360-360.BMP" />
     <Image Include="90-90.bmp" />
     <Image Include="900-900.bmp" />
   </ItemGroup>
