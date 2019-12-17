@@ -9,7 +9,7 @@
 
 using namespace std;
 
-constexpr int NUM_OBJS_TO_BE_RENDERED = 2;
+constexpr int NUM_OBJS_TO_BE_RENDERED = 3;
 
 int execute();
 
@@ -27,14 +27,14 @@ int execute() {
 	// Object 0:
 	material[0] = Material(Vec4f(.8,1,.9,1), 100.0, 0.);	// Material property
 	material[1] = Material(Vec4f(.7,.7,.7,1), 100.0, 1.);
-	models[0].loadIdentity();	// Model transform matrix
+	models[0] = rotate(M_PI/3, Vec3f(0,1,0));	// Model transform matrix
 	models[1] = translate(Vec3f(0, -0.5, 0));
-
-	cout << models[0] << endl;
+	models[2] = translate(Vec3f(1, 0, 0));
 
 	Mesh meshes[NUM_OBJS_TO_BE_RENDERED] = {
 		Mesh("bunny.off", material[0], models[0], 1),
-		Mesh(Mesh::SQUARE, material[1], models[1], 10)
+		Mesh(Mesh::SQUARE, material[1], models[1], 10),
+		Mesh(Mesh::SPHERE, material[1], models[2], 0.5)
 	};
 
 	// Configure lights

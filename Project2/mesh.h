@@ -31,4 +31,7 @@ public:
 	const Material *get_material() { return &material; }
 	const Face *get_const_faces() { return faces; }
 	Face *get_faces() { return faces; }
+
+private:
+	void offFileLoader(const char *filename, const Mat4f &_model);
 };
