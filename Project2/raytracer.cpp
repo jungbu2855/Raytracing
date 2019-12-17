@@ -214,7 +214,6 @@ Vec4f RayTracer::shadow(const Ray &incident, const Face& face, const Vec3f &inte
 static const Ray find_primary_ray(int h, int w, const Camera &camera) {
 	// init vars
 	Vec3f origin = camera.position;
-	Vec3f view_dir = camera.center - camera.position;
 	float h_max = camera.zNear * tan(camera.fovy / 2);
 	float w_max = h_max * camera.aspect_ratio;
 
@@ -225,26 +224,28 @@ static const Ray find_primary_ray(int h, int w, const Camera &camera) {
 	Vec3f ray_dir = { x,y,-1 };
 
 	// View transformation
-	Mat4f view; view.loadIdentity();
+	Mat4f view;
 
-	// (1) rotate (dir)
-	Vec3f axis = view_dir.cross({0,0,-1});
-	float sin = axis.norm() / view_dir.norm();
-	float cos = view_dir.dot({ 0,0,-1 }) / view_dir.norm();
-	float angle = cos >= 0 ? asin(sin) : acos(cos);
-	view *= rotate(angle, axis);
+	Vec3f forward = - camera.center + camera.position;
+	forward.normalize();
+	Vec3f left = camera.up.cross(forward);
+	left.normalize();
+	Vec3f up = forward.cross(left);
+	up.normalize();
+	view.setMat_ij(left[X], 0, 0);
+	view.setMat_ij(left[Y], 1, 0);
+	view.setMat_ij(left[Z], 2, 0);
+	view.setMat_ij(up[X], 0, 1);
+	view.setMat_ij(up[Y], 1, 1);
+	view.setMat_ij(up[Z], 2, 1);
+	view.setMat_ij(forward[X], 0, 2);
+	view.setMat_ij(forward[Y], 1, 2);
+	view.setMat_ij(forward[Z], 2, 2);
 
-	// (2) rotate (up)
-	Mat3f view3 = view;
-	Vec3f orig_up = { 0,1,0 };
-	orig_up = view3 * orig_up;
-	Vec3f new_up = camera.up - (view_dir.dot(camera.up) / view_dir.dot(view_dir)) * view_dir;
-
-	axis = new_up.cross(orig_up);
-	sin = axis.norm() / new_up.norm();
-	cos = new_up.dot(orig_up) / new_up.norm();
-	angle = cos >= 0 ? asin(sin) : acos(cos);
-	view = rotate(angle, axis) * Mat4f(view3);
+	view.setMat_ij(camera.position[X], 0, 3);
+	view.setMat_ij(camera.position[Y], 1, 3);
+	view.setMat_ij(camera.position[Z], 2, 3);
+	view.setMat_ij(1, 3, 3);
 
 	ray_dir = Mat3f(view) * ray_dir;
 	return Ray(origin, ray_dir, 1);

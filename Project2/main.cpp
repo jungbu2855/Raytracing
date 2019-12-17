@@ -27,7 +27,7 @@ int execute() {
 	// Object 0:
 	material[0] = Material(Vec4f(.8,1,.9,1), 100.0, 0.);	// Material property
 	material[1] = Material(Vec4f(.7,.7,.7,1), 100.0, 1.);
-	models[0] = rotate(M_PI/3, Vec3f(1,0,0));	// Model transform matrix
+	models[0].loadIdentity();	// Model transform matrix
 	models[1] = translate(Vec3f(0, -0.5, 0));
 
 	cout << models[0] << endl;
@@ -45,9 +45,9 @@ int execute() {
 
 	// Configure camera
 	Camera camera(
-		0, 0, 5,	// eye
+		0, 4, 0,	// eye
 		0, 0, 0,	// center
-		0, 1, 0,	// up
+		0, 0, -1,	// up
 		90, 		// img height
 		60,			// fovy
 		1.,			// aspect
