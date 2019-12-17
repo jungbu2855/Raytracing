@@ -162,13 +162,21 @@ Vec4f RayTracer::shadow(const Ray &incident, const Face& face, const Vec3f &inte
 		}
 
 		Ray refl = incident.reflect(face, intersection_pos);
-		Vec4f diffuse;
+		Vec4f diffuse, specular;
 		diffuse = (lights[i].color * lights[i].color[A] *
 			face.material->getcolor() * face.material->getopacity()) *
 			fmax(shad_dir.dot(face.normal), 0);
-
 		diffuse[3] = 1;
-		results[i] = diffuse;
+
+		float shininess = face.material->getmirror() < 0.95 ?
+			1 / (1 - face.material->getmirror()) * 10:
+			200.;
+		specular = (lights[i].color * lights[i].color[A]) *
+			pow(fmax(view.dot(refl.getDirection()), 0), shininess);
+		specular[3] = 1;
+		results[i] = diffuse + specular;
+		for (int j = 0; j < 4; j++)
+			results[i][j] = results[i][j] > 1.f ? 1.f : results[i][j];
 	}
 
 	Vec4f ret = setFinalColor(results, n_lights);
