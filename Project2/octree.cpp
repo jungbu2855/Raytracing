@@ -322,7 +322,7 @@ static float intersect_face(const Ray &ray, const Face &face) {
 	// parallel test
 	// It does not consider when the ray is INSIDE the face plane
 	float r = n.dot(ray.getDirection());
-	if (abs(r) < FLT_EPSILON) {
+	if (abs(r) < 2 * FLT_EPSILON) {
 		return -1;
 	}
 
@@ -353,7 +353,7 @@ static float intersect_face(const Ray &ray, const Face &face) {
 	float t = (uv * wu - uu * wv) / uv2_uuvv;
 
 	// s, t range test
-	if (s < 0.f || t < 0.f || s + t > 1.f) {
+	if (s < -0.f || t < -0.f || s + t > 1.f) {
 		return -1;
 	}
 

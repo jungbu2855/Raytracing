@@ -17,12 +17,12 @@ private:
 	Vec3f *vertices;	// All vertices it contains
 	Face *faces;		// (coords, normals, *material prop)
 	int mesh_size;		// number of faces in the mesh
-	int mesh_dim;		// Maximum length among x, y, z direction dimensions.
+	float mesh_dim;		// Maximum length among x, y, z direction dimensions.
 	Material material;	// Material property
 public:
 	// Constructor: Mesh file read & loader. It does everything needed.
-	Mesh(const char *filename, const Material &mat, const Mat4f &_model, int dim = 1);
-	Mesh(Shape shape, const Material &mat, const Mat4f &_model, int dim = 1);
+	Mesh(const char *filename, const Material &mat, const Mat4f &_model, float dim = 1);
+	Mesh(Shape shape, const Material &mat, const Mat4f &_model, float dim = 1);
 	~Mesh();
 
 	// Getters

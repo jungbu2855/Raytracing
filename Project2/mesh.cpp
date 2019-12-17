@@ -13,7 +13,7 @@ static float INF = 1000;
 static void update_maxmin(const Vec3f &v, Vec3f &max, Vec3f &min);
 static void get_normal(Face &f);
 
-Mesh::Mesh(const char *filename, const Material &mat, const Mat4f &_model, int dim) : mesh_dim(dim), material(mat)
+Mesh::Mesh(const char *filename, const Material &mat, const Mat4f &_model, float dim) : mesh_dim(dim), material(mat)
 {
 	FILE *f;
 	char buf[64];
@@ -73,10 +73,8 @@ Mesh::Mesh(const char *filename, const Material &mat, const Mat4f &_model, int d
 	// 4. Face Coordinates (Only triangular faces)
 	for (int i = 0; i < nf; ++i)
 	{
-		assert(!fileio.eof());
 		int idx1, idx2, idx3;
 		fileio >> buf >> idx1 >> idx2 >> idx3;
-		assert(idx1 != idx2 && idx1 != idx3 && idx2 != idx3);
 		faces[i].vertices[0] = vertices + idx1;
 		faces[i].vertices[1] = vertices + idx2;
 		faces[i].vertices[2] = vertices + idx3;
@@ -86,8 +84,6 @@ Mesh::Mesh(const char *filename, const Material &mat, const Mat4f &_model, int d
 
 		faces[i].material = &material;
 	}
-	fileio >> buf >> buf >> buf;
-	assert(fileio.eof());
 
 	cout << "Faces read" << endl;
 
@@ -96,7 +92,10 @@ Mesh::Mesh(const char *filename, const Material &mat, const Mat4f &_model, int d
 
 /* Simple-shape mesh loader */
 /* 웬만하면 유저가 model matrix로 직관적으로 조작할 수 있도록 가로*세로*깊이 모두 1로 맞춰주시고 0,0,0을 중심점으로, z축에 평행하거나 z축 위에 있도록 만들어주세요. */
-Mesh::Mesh(Shape shape, const Material &mat, const Mat4f &_model, int dim) : mesh_dim(dim), material(mat) {
+Mesh::Mesh(Shape shape, const Material &mat, const Mat4f &_model, float dim) : mesh_dim(dim), material(mat) {
+	// Model transformation matrix
+	Mat4f model = _model * scale(dim);
+
 	switch (shape) {
 	case TRIANGLE:
 		this->mesh_size = 1;
@@ -107,9 +106,12 @@ Mesh::Mesh(Shape shape, const Material &mat, const Mat4f &_model, int dim) : mes
 		float point1;
 		point1 = sqrt(2) / 2;
 
-		this->vertices[0] = (-0.5, 0, point1);
-		this->vertices[1] = (0.5, 0, point1);
-		this->vertices[2] = (0, 0, -point1);
+		this->vertices[0] = Vec3f(-0.5, 0, point1);
+		this->vertices[1] = Vec3f(0.5, 0, point1);
+		this->vertices[2] = Vec3f(0, 0, -point1);
+
+		for (int i = 0; i < 3; i++)
+			vertices[i] = model * vertices[i];
 
 		for (int i = 0; i < 4; i++) {
 			faces[0].vertices[i] = &vertices[i];
@@ -125,18 +127,21 @@ Mesh::Mesh(Shape shape, const Material &mat, const Mat4f &_model, int dim) : mes
 		vertices = new Vec3f[4];
 		faces = new Face[mesh_size];
 
-		this->vertices[0] = (0.5, 0, 0.5);
-		this->vertices[1] = (-0.5, 0, 0.5);
-		this->vertices[2] = (-0.5, 0, -0.5);
-		this->vertices[3] = (0.5, 0, -0.5);
+		this->vertices[0] = Vec3f(0.5, 0, 0.5);
+		this->vertices[1] = Vec3f(-0.5, 0, 0.5);
+		this->vertices[2] = Vec3f(-0.5, 0, -0.5);
+		this->vertices[3] = Vec3f(0.5, 0, -0.5);
+
+		for (int i = 0; i < 4; i++)
+			vertices[i] = model * vertices[i];
 
 		faces[0].vertices[0] = &vertices[0];
 		faces[0].vertices[1] = &vertices[2];
 		faces[0].vertices[2] = &vertices[1];
 
 		faces[1].vertices[0] = &vertices[0];
-		faces[1].vertices[1] = &vertices[2];
-		faces[1].vertices[2] = &vertices[3];
+		faces[1].vertices[1] = &vertices[3];
+		faces[1].vertices[2] = &vertices[2];
 
 		for (int i = 0; i < 2; i++) {
 			get_normal(faces[i]);
@@ -152,14 +157,17 @@ Mesh::Mesh(Shape shape, const Material &mat, const Mat4f &_model, int dim) : mes
 		vertices = new Vec3f[8];
 		faces = new Face[mesh_size];
 
-		this->vertices[0] = (0.5, 0.5, -0.5);
-		this->vertices[1] = (0.5, 0.5, 0.5);
-		this->vertices[2] = (-0.5, 0.5, 0.5);
-		this->vertices[3] = (-0.5, 0.5, -0.5);
-		this->vertices[4] = (0.5, -0.5, -0.5);
-		this->vertices[5] = (0.5, -0.5, 0.5);
-		this->vertices[6] = (-0.5, -0.5, 0.5);
-		this->vertices[7] = (-0.5, -0.5, -0.5);
+		this->vertices[0] = Vec3f(0.5, 0.5, -0.5);
+		this->vertices[1] = Vec3f(0.5, 0.5, 0.5);
+		this->vertices[2] = Vec3f(-0.5, 0.5, 0.5);
+		this->vertices[3] = Vec3f(-0.5, 0.5, -0.5);
+		this->vertices[4] = Vec3f(0.5, -0.5, -0.5);
+		this->vertices[5] = Vec3f(0.5, -0.5, 0.5);
+		this->vertices[6] = Vec3f(-0.5, -0.5, 0.5);
+		this->vertices[7] = Vec3f(-0.5, -0.5, -0.5);
+
+		for (int i = 0; i < 8; i++)
+			vertices[i] = model * vertices[i];
 
 		faces[0].vertices[0] = &vertices[0];
 		faces[0].vertices[1] = &vertices[1];
