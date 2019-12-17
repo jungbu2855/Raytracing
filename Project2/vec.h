@@ -650,7 +650,7 @@ const Mat4<float> rotate(float rad, const Vec3<T> &axis) {
 
 	float temp[4][4] = {
 		{_cos + _axis[0] * _axis[0] * (1 - _cos), _axis[0] * _axis[1] * (1 - _cos) - _axis[2] * _sin, _axis[0] * _axis[2] * (1 - _cos) + _axis[1] * _sin, 0},
-		{_axis[1] * _axis[0] * (1 - _cos) + _axis[2] * _sin, _cos + _axis[1] * _axis[1] * (1 - _cos), _axis[1] * _axis[2] * (1 - _cos) + _axis[0] * _sin, 0},
+		{_axis[1] * _axis[0] * (1 - _cos) + _axis[2] * _sin, _cos + _axis[1] * _axis[1] * (1 - _cos), _axis[1] * _axis[2] * (1 - _cos) - _axis[0] * _sin, 0},
 		{_axis[2] * _axis[0] * (1 - _cos) - _axis[1] * _sin, _axis[2] * _axis[1] * (1 - _cos) + _axis[0] * _sin, _cos + _axis[2] * _axis[2] * (1 - _cos), 0},
 		{0, 0, 0, 1}
 	};
