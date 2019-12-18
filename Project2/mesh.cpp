@@ -208,8 +208,6 @@ void Mesh::offFileLoader(const char *filename, const Mat4d &_model) {
 	fileio >> nv >> nf >> buf;
 	assert(nv >= 0 && nf >= 0);
 
-	cout << "Mesh file opened" << endl;
-
 	// 2+. Try to allocate mem space
 	vertices = new Vec3d[nv];
 	faces = new Face[nf];
@@ -245,8 +243,6 @@ void Mesh::offFileLoader(const char *filename, const Mat4d &_model) {
 		vertices[i] = model * vertices[i];
 	}
 
-	cout << "Vertex read" << endl;
-
 	// 4. Face Coordinates (Only triangular faces)
 	for (int i = 0; i < nf; ++i)
 	{
@@ -261,8 +257,6 @@ void Mesh::offFileLoader(const char *filename, const Mat4d &_model) {
 
 		faces[i].material = &material;
 	}
-
-	cout << "Faces read" << endl;
 
 	fileio.close();
 
