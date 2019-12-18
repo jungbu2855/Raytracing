@@ -96,9 +96,10 @@ const Vec4d RayTracer::cast(const Ray &ray, int depth) const {
 		return { 0,0,0,1 }; // return black for non-intersecting ray
 	}
 
+	
 	// Generating second rays
-	if (face.material->getopacity() > 8 * FLT_EPSILON) {
-		if (face.material->getmirror() > 8 * FLT_EPSILON) {
+	if (face.material->getopacity() < 1 - FLT_EPSILON) {
+		if (face.material->getmirror() > FLT_EPSILON) {
 			Vec4d colors[] =
 			{
 				cast(ray.reflect(face, pos), depth + 1),		// reflecting ray
@@ -117,7 +118,7 @@ const Vec4d RayTracer::cast(const Ray &ray, int depth) const {
 		}
 	}
 	else {
-		if (face.material->getmirror() > 8 * FLT_EPSILON) {
+		if (face.material->getmirror() > FLT_EPSILON) {
 			Vec4d colors[] =
 			{
 				cast(ray.reflect(face, pos), depth + 1),		// reflecting ray
@@ -162,6 +163,8 @@ Vec3d ** RayTracer::render() const {
 		if (i % ((height >= 100) ? (height / 100) : (1)) == 0)
 			cout << "#";
 	}
+
+	delete[] threads;
 	
 	// Now you have colored whole pixels
 	return pixels;
@@ -178,7 +181,7 @@ Vec4d RayTracer::shadow(const Ray &incident, const Face& face, const Vec3d &inte
 		Face destf;	Vec3d destv;
 		if (intersect(shad, destf, destv)
 			&& intersection_pos.distance(destv) < intersection_pos.distance(lights[i].position)) {
-			results[i] = { 0, 0, 0, 1 };
+			results[i] = { 0, 0, 0, face.material->getopacity() };
 			continue;
 		}
 
@@ -207,7 +210,7 @@ Vec4d RayTracer::shadow(const Ray &incident, const Face& face, const Vec3d &inte
 	}
 
 	Vec4d ret = setFinalColor(results, n_lights);
-	delete results;
+	delete[] results;
 	return ret;
 }
 

@@ -80,6 +80,7 @@ Ray Ray::refract(const Face& face, const Vec3d &intersection_pos) const {
 	Vec3d new_direction;
 	double NI, n, refindex_prev, refindex_next;
 	NI = this->getDirection().dot(face.normal);
+	NI = abs(NI);
 
 	//calculate the relative refraction index
 	refindex_prev = this->getRefraction_index();
@@ -88,30 +89,31 @@ Ray Ray::refract(const Face& face, const Vec3d &intersection_pos) const {
 	n = refindex_next / refindex_prev;
 
 	//if the opacity of face.material is 1, this material has no tranmitted ray.
-	if (face.material->getopacity() != 1) {
-		double middle = 1 - (n * n) * (1 - NI * NI);
+	double middle = 1 - (n * n) * (1 - NI * NI);
 
-		if (middle < 0)
-			return reflect(face, intersection_pos);
-		new_direction = (n * NI - sqrt(middle)) * face.normal - n * this->getDirection();
-		new_direction.normalize();
-		Ray new_ray(intersection_pos, new_direction);
-
-		//update the refraction_index for new_ray
-		new_ray.setRefraction_index(refindex_next);
-
-		//set the new intensity with attenuation and opacity value.
+	if (middle < 0) {
+		Ray refl = reflect(face, intersection_pos);
 		Ray newray_temp(this->getOrigin(), this->getDirection(), this->getIntensity());
 		newray_temp.attenuate(intersection_pos);
-
-		new_ray.setIntensity(newray_temp.getIntensity() * (1 - face.material->getopacity()));
-
-		//add one to the collision number
-		int new_collisions = this->getCollisions() + 1;
-		new_ray.setCollisions(new_collisions);
-
-		return new_ray;
+		refl.setIntensity(newray_temp.getIntensity() * (1 - face.material->getopacity()));
+		return refl;
 	}
-	else
-		return *this;
+	new_direction = (n * NI - sqrt(middle)) * face.normal + n * this->getDirection();
+	new_direction.normalize();
+	Ray new_ray(intersection_pos, new_direction);
+
+	//update the refraction_index for new_ray
+	new_ray.setRefraction_index(refindex_next);
+
+	//set the new intensity with attenuation and opacity value.
+	Ray newray_temp(this->getOrigin(), this->getDirection(), this->getIntensity());
+	newray_temp.attenuate(intersection_pos);
+
+	new_ray.setIntensity(newray_temp.getIntensity() * (1 - face.material->getopacity()));
+
+	//add one to the collision number
+	int new_collisions = this->getCollisions() + 1;
+	new_ray.setCollisions(new_collisions);
+
+	return new_ray;
 }

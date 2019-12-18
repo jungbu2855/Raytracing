@@ -9,7 +9,7 @@
 
 using namespace std;
 
-constexpr int NUM_OBJS_TO_BE_RENDERED = 3;
+constexpr int NUM_OBJS_TO_BE_RENDERED = 8;
 
 int execute();
 
@@ -25,16 +25,26 @@ int execute() {
 	Mat4d models[NUM_OBJS_TO_BE_RENDERED];
 
 	// Object 0:
-	material[0] = Material(Vec4d(.8,1,.9,1), 100.0, 0.);	// Material property
-	material[1] = Material(Vec4d(.7,.7,.7,1), 100.0, 1.);
-	models[0] = rotate(M_PI/3, Vec3d(0,1,0));	// Model transform matrix
+	material[0] = Material(Vec4d(.8, 1, .9, 1), 100.0, 0.);	// Material property
+	material[1] = Material(Vec4d(.5, .5, .5, 1), 100.0, 0.7);
+	material[2] = Material(Vec4d(1., 0., 0., 1), 100.0, 0.0);
+	material[3] = Material(Vec4d(0.663, 0.875, 0.929, 1), 100.0, 0.0);
+	material[4] = Material(Vec4d(0., 0., 0., 1), 100.0, 0.0);
+	material[5] = Material(Vec4d(0.345, 0.667, 0.31, 1), 100.0, 0.0);
+	material[6] = Material(Vec4d(1., 0., 0., 1), 100.0, 0.0);
+	material[7] = Material(Vec4d(1, 1, 1, 0.001), 1.4, 0.00);
+	models[0].loadIdentity();//rotate(M_PI / 3, Vec3d(1, 0, 0));	// Model transform matrix
 	models[1] = translate(Vec3d(0, -0.5, 0));
-	models[2] = translate(Vec3d(1, 0, 0));
+	models[2] = translate(Vec3d(0.2, 1., 0)) * rotate(M_PI / 4, Vec3d(0, 1, 0));
+	models[3] = translate(Vec3d(0, 0, -3.5)) * rotate(M_PI / 2, Vec3d(1, 0, 0));
+	models[4] = translate(Vec3d(-1., -0.3, 1.)) * rotate(M_PI / 3, Vec3d(0, 1, 1));
+	models[5] = translate(Vec3d(1.5, 0, 0)) * rotate(M_PI / 2.2, Vec3d(0, -1, 0)) * rotate(M_PI / 2, Vec3d(1, 0, 0));
+	models[6] = translate(Vec3d(1, 0., 0.3)) * rotate(M_PI / 2, Vec3d(1, 0, 0));
+	models[7] = translate(Vec3d(0, 0.3, 2.));
 
-	Mesh meshes[NUM_OBJS_TO_BE_RENDERED] = {
+	Mesh meshes[2] = {
 		Mesh("bunny.off", material[0], models[0], 1),
-		Mesh(Mesh::SQUARE, material[1], models[1], 10),
-		Mesh(Mesh::SPHERE, material[1], models[2], 0.5)
+		Mesh(Mesh::SQUARE, material[1], models[1], 10)		//mirror floor
 	};
 
 	// Configure lights
@@ -45,31 +55,36 @@ int execute() {
 
 	// Configure camera
 	Camera camera(
-		0, 4, 0,	// eye
+		0, 0, 5,	// eye
 		0, 0, 0,	// center
-		0, 0, -1,	// up
-		360, 		// img height
+		0, 1, 0,	// up
+		900, 		// img height
 		60,			// fovy
 		1.,			// aspect
 		0.5, 10		// zNear, zFar
 	);
 
 	// Run
-	RayTracer rayTracer(meshes, sizeof meshes / sizeof (Mesh), lights, sizeof lights / sizeof (Light), camera);
+	RayTracer rayTracer(meshes, sizeof meshes / sizeof(Mesh), lights, sizeof lights / sizeof(Light), camera);
 	Vec3d** result = rayTracer.render();
-	
+
 	int h = camera.height;
 	int w = h * camera.aspect_ratio;
 	uchar4 *converted = new uchar4[h*w];
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
-			converted[h*i+j].x = result[i][j][R] * 255;
-			converted[h*i+j].y = result[i][j][G] * 255;
-			converted[h*i+j].z = result[i][j][B] * 255;
+			converted[h*i + j].x = result[i][j][R] * 255;
+			converted[h*i + j].y = result[i][j][G] * 255;
+			converted[h*i + j].z = result[i][j][B] * 255;
 		}
 
 	}
 
-	SaveBMPFile((uchar4 *)converted, h, w, "BUNNY2.BMP", "360-360.bmp");
+	SaveBMPFile((uchar4 *)converted, h, w, "BUNNY3.BMP", "900-900.bmp");
+
+	for (int i = 0; i < h; i++)
+		delete[] result[i];
+	delete[] result;
+	delete[] converted;
 	return 0;
 }
