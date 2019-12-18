@@ -192,21 +192,21 @@ Vec4d RayTracer::shadow(const Ray &incident, const Face& face, const Vec3d &inte
 		Ray refl = Ray(lights[i].position, refl_dir).reflect(face, intersection_pos);
 
 		Vec4d diffuse, specular;
-		diffuse = (lights[i].color * lights[i].color[A] *
-			face.material->getcolor() * face.material->getopacity()) *
+		diffuse = lights[i].color *
+			face.material->getcolor() *
 			fmax(shad_dir.dot(face.normal), 0);
 		diffuse[3] = 1;
 
 		double shininess = face.material->getmirror() < 0.95 ?
 			1 / (1 - face.material->getmirror()) * 10:
 			200.;
-		specular = (lights[i].color * lights[i].color[A]) *
+		specular = lights[i].color *
 			pow(fmax(view.dot(refl.getDirection()), 0), shininess);
 		specular[3] = 1;
 		results[i] = diffuse + specular;
 		for (int j = 0; j < 3; j++)
 			results[i][j] = results[i][j] > 1.f ? 1.f : results[i][j];
-		results[i][A] = att;
+		results[i][A] = att * lights[i].color[A] * face.material->getopacity();
 	}
 
 	Vec4d ret = setFinalColor(results, n_lights);
@@ -328,8 +328,11 @@ static Vec4d setFinalColor(const Vec4d *c, int num) {
 		color[A] += c[i][A];
 	}
 
+	if (color[A] < FLT_EPSILON)
+		return { 0,0,0,0 };
+
 	for (int i = 0; i < 4; i++) {
-		color[i] = color[A] > 8*FLT_EPSILON ? color[i] / color[A] : 0;
+		color[i] = color[A] > FLT_EPSILON ? color[i] / color[A] : 0;
 		color[i] = color[i] > 1. ? 1. : color[i];
 		assert(color[i] >= -0.f && color[i] <= 1.f);
 	}
